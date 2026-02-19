@@ -27,7 +27,7 @@ export default function TracksSection({ tracks }: { tracks?: any[] }) {
     },
   };
 
- const itemVariants: Variants = {
+  const itemVariants: Variants = {
   hidden: { 
     y: 20, 
     opacity: 0 
@@ -37,9 +37,7 @@ export default function TracksSection({ tracks }: { tracks?: any[] }) {
     opacity: 1,
     transition: { 
       duration: 0.5, 
-      // Option A: Use a cubic-bezier array for total type safety
-      ease: [0.33, 1, 0.68, 1] 
-      // Option B: If you prefer the string, the ': Variants' type above usually fixes it
+      ease: "easeOut" // Now TypeScript knows this is a valid Easing string
     }
   }
 };
