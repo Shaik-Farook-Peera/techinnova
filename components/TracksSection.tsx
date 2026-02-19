@@ -27,14 +27,19 @@ export default function TracksSection({ tracks }: { tracks?: any[] }) {
     },
   };
 
-  const itemVariants: Variants = {
-  hidden: { y: 20, opacity: 0 },
+ const itemVariants: Variants = {
+  hidden: { 
+    y: 20, 
+    opacity: 0 
+  },
   visible: { 
     y: 0, 
     opacity: 1,
     transition: { 
       duration: 0.5, 
-      ease: [0.33, 1, 0.68, 1] // Using a cubic-bezier array is type-safe
+      // Option A: Use a cubic-bezier array for total type safety
+      ease: [0.33, 1, 0.68, 1] 
+      // Option B: If you prefer the string, the ': Variants' type above usually fixes it
     }
   }
 };
