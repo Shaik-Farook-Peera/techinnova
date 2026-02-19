@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Terminal, ArrowRight } from 'lucide-react';
+import { Variants } from 'framer-motion';
 
 export default function TracksSection({ tracks }: { tracks?: any[] }) {
   // If tracks are still loading or undefined, we show a clean skeleton or null
@@ -26,14 +27,17 @@ export default function TracksSection({ tracks }: { tracks?: any[] }) {
     },
   };
 
-  const itemVariants = {
-    hidden: { y: 15, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.4, ease: "easeOut" },
-    },
-  };
+  const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { 
+      duration: 0.5, 
+      ease: [0.33, 1, 0.68, 1] // Using a cubic-bezier array is type-safe
+    }
+  }
+};
 
   return (
     <motion.div 
