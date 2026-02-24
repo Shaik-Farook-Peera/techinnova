@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Countdown from "@/components/Countdown";
 import TracksSection from '@/components/TracksSection';
 import Timeline from '@/components/Timeline';
+import HowToCode from "@/components/HowToCode";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 import GalaxyScene from "@/components/GalaxyScene"; 
@@ -113,7 +114,7 @@ export default function Page() {
              <Timeline timeline={config?.timeline} />
           </div>
         </section>
-
+<HowToCode />
         {/* 4. FAQ SECTION */}
         <section id="faq" className="relative py-24 bg-[#0d1117] z-20">
           <div className="max-w-7xl mx-auto px-6">
