@@ -33,10 +33,11 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
-      
-      // Nav Spy Logic
-      if (pathname === "/") {
-        const scrollPosition = window.scrollY + 120;
+     // Nav Spy Logic inside useEffect
+if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
+  setActiveSection(item.id); // As soon as this becomes 'tracks', the navbar turns black
+  break;
+}
         
         // Default to home if at top
         if (scrollPosition < 500) {
@@ -87,10 +88,11 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-0 left-0 w-full z-[200] transition-all duration-300 border-b ${
-      scrolled || pathname !== "/" 
-      ? "bg-[#0d1117]/90 backdrop-blur-md border-[#30363d] shadow-md py-3" 
-      : "bg-transparent border-transparent py-4"
-    }`}>
+  // Trigger solid background if scrolled OR if we are not in the "home" section
+  scrolled || activeSection !== "home" || pathname !== "/" 
+  ? "bg-[#000000] border-[#30363d] shadow-md py-3" // Solid black background
+  : "bg-transparent border-transparent py-4"      // Transparent at the very top of Home
+}`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
         
         {/* BRAND */}
