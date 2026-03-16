@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link"; 
 import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
-import { Terminal, Cpu, Clock, ChevronRight, MessageSquare } from "lucide-react";
+import { Cpu, Clock, ChevronRight, MessageSquare } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Countdown from "@/components/Countdown";
 import TracksSection from '@/components/TracksSection';
@@ -51,11 +51,14 @@ export default function Page() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              {/* DATE BADGE REMOVED FROM HERE */}
+              {/* DATE BADGE REMOVED AS REQUESTED */}
 
               <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white leading-tight mb-4 uppercase">
                 {config?.hero_title || "TECHINNOVA"} 
-                <span className="text-[#a371f7] ml-4">2K26</span> {/* 2K26 ADDED BESIDE NAME */}
+                {/* 2K26 added beside title with custom purple accent */}
+                <span className="text-[#a371f7] ml-4 drop-shadow-[0_0_15px_rgba(163,113,247,0.4)]">
+                  2K26
+                </span>
               </h1>
               
               <p className="text-[#8b949e] text-lg md:text-xl max-w-2xl mx-auto mb-8 font-medium">
