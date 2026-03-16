@@ -51,13 +51,11 @@ export default function Page() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#30363d] bg-[#161b22] text-[#a371f7] text-xs font-medium mb-6">
-                <Terminal size={14} />
-                <span>25-02-2026</span>
-              </div>
+              {/* DATE BADGE REMOVED FROM HERE */}
 
               <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white leading-tight mb-4 uppercase">
-                {config?.hero_title || "TECHINNOVA"}
+                {config?.hero_title || "TECHINNOVA"} 
+                <span className="text-[#a371f7] ml-4">2K26</span> {/* 2K26 ADDED BESIDE NAME */}
               </h1>
               
               <p className="text-[#8b949e] text-lg md:text-xl max-w-2xl mx-auto mb-8 font-medium">
@@ -76,7 +74,6 @@ export default function Page() {
                     Register Now <ChevronRight size={18} />
                   </motion.button>
                 </Link>
-                {/* Linked to #tracks for smooth internal navigation */}
                 <Link href="#tracks">
                   <button className="px-8 py-3 bg-[#161b22] border border-[#30363d] hover:border-[#a371f7] hover:text-[#a371f7] text-white font-bold rounded-md transition-all text-sm md:text-base uppercase tracking-tight">
                     View Tracks
@@ -114,7 +111,9 @@ export default function Page() {
              <Timeline timeline={config?.timeline} />
           </div>
         </section>
-<HowToCode />
+
+        <HowToCode />
+
         {/* 4. FAQ SECTION */}
         <section id="faq" className="relative py-24 bg-[#0d1117] z-20">
           <div className="max-w-7xl mx-auto px-6">
