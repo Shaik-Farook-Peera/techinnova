@@ -32,13 +32,11 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-     // Nav Spy Logic inside useEffect
-if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
-  setActiveSection(item.id); // As soon as this becomes 'tracks', the navbar turns black
-  break;
-}
-        
+      const scrollPosition = window.scrollY;
+      setScrolled(scrollPosition > 20);
+      
+      if (pathname === "/") {
+        // Nav Spy Logic for home page
         // Default to home if at top
         if (scrollPosition < 500) {
           setActiveSection("home");
@@ -54,7 +52,7 @@ if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
             const offsetBottom = offsetTop + element.offsetHeight;
             
             if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
-              setActiveSection(item.id);
+              setActiveSection(item.id); // As soon as this becomes 'tracks', the navbar turns black
               break;
             }
           }

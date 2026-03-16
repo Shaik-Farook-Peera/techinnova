@@ -56,7 +56,7 @@ export default function Page() {
               <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white leading-tight mb-4 uppercase">
                 {config?.hero_title || "TECHINNOVA"} 
                 {/* 2K26 added beside title with custom purple accent */}
-                <span className="text-[#a371f7] ml-4 drop-shadow-[0_0_15px_rgba(163,113,247,0.4)]">
+                <span className="text-[#a371f7] ml-1 md:ml-4 inline-block">
                   2K26
                 </span>
               </h1>

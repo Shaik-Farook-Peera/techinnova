@@ -63,25 +63,16 @@ export default function ProblemStatements() {
                   </p>
                 </div>
 
-                {/* 2. TECH STACK SECTION - New Addition */}
+                {/* 2. AI TOOLS SECTION */}
                 <div className="px-1">
                   <div className="flex items-center gap-2 mb-4">
-                    <h4 className="text-[#a371f7] text-[10px] font-bold uppercase tracking-widest">Required Tech Stack</h4>
+                    <h4 className="text-[#a371f7] text-[10px] font-bold uppercase tracking-widest">AI Tools You Can Use</h4>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedProblem.technologies ? (
-                      selectedProblem.technologies.split(',').map((tech: string) => (
-                        <span 
-                          key={tech} 
-                          className="px-3 py-1.5 bg-[#30363d] border border-[#444c56] rounded-md text-[11px] font-mono text-[#c9d1d9] hover:border-[#a371f7] transition-colors"
-                        >
-                          {tech.trim()}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-[#484f58] text-xs italic">No specific stack constraints provided.</span>
-                    )}
-                  </div>
+                  <p className="text-[#8b949e] text-sm leading-relaxed">
+                    {selectedProblem.technologies 
+                      ? `You can leverage ${selectedProblem.technologies.split(',').map((t: string) => t.trim()).join(', ')} to solve this challenge.`
+                      : "No specific AI tools recommended for this challenge."}
+                  </p>
                 </div>
 
                 {/* 3. CALL TO ACTION */}
@@ -109,7 +100,7 @@ export default function ProblemStatements() {
           </h1>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-4 gap-6">
           {problems.map((p) => (
             <motion.div 
               key={p.id} 

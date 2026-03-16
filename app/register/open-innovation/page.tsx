@@ -1,26 +1,21 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation"; 
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { Terminal, UserPlus, ShieldAlert, CheckCircle2, ArrowLeft, Cpu, Trash2, Phone } from "lucide-react";
+import { Terminal, UserPlus, ShieldAlert, CheckCircle2, ArrowLeft, Trash2, Phone } from "lucide-react";
 import confetti from "canvas-confetti";
 
-export default function Register() {
+export default function OpenInnovationRegister() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#0d1117]" />}>
-      <RegisterForm />
+      <OpenInnovationRegisterForm />
     </Suspense>
   );
 }
 
-function RegisterForm() {
-  const searchParams = useSearchParams();
-  const initialTrack = searchParams.get("track") || "";
-  const initialProbId = searchParams.get("probId") || "";
-
+function OpenInnovationRegisterForm() {
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied'; message: string; id?: string }>({ 
     show: false, type: 'success', message: "" 
@@ -29,15 +24,13 @@ function RegisterForm() {
   const [branches, setBranches] = useState<string[]>([]);
   const [years, setYears] = useState<string[]>([]);
   const [sections, setSections] = useState<string[]>([]);
-  const [dbProblems, setDbProblems] = useState<any[]>([]); 
 
   const [teamName, setTeamName] = useState("");
-  const [track, setTrack] = useState(initialTrack); 
-  const [probId, setProbId] = useState(initialProbId); 
-  const [probName, setProbName] = useState("");
+  const [oiEmail, setOiEmail] = useState("");
+  const [oiProblemId, setOiProblemId] = useState("");
+  const [oiProblemTitle, setOiProblemTitle] = useState("");
   const [cfg, setCfg] = useState<any>(null);
 
-  // Initializing with 'phone' field
   const [members, setMembers] = useState([
     { name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" },
     { name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" }
@@ -52,27 +45,12 @@ function RegisterForm() {
         setYears(regData.years || []);
         setSections(regData.sections || []);
       }
-
-      const { data: problemsData } = await supabase
-        .from('problem_statements')
-        .select('id, track_name, problem_title');
-      
-      if (problemsData) {
-        setDbProblems(problemsData);
-        if (initialProbId) {
-          const matched = problemsData.find(x => x.id === initialProbId);
-          if (matched) setProbName(matched.problem_title);
-        }
-      }
     }
     loadData();
-  }, [initialProbId]);
-
-  const availableTracks = Array.from(new Set(dbProblems.map(p => p.track_name)));
+  }, []);
 
   const handleUpdate = (idx: number, field: string, val: string) => {
     const next = [...members];
-    // Force Register Number to Uppercase while typing
     if (field === 'reg_number') {
         (next[idx] as any)[field] = val.toUpperCase();
     } else {
@@ -87,28 +65,49 @@ function RegisterForm() {
     setMembers(filtered);
   };
 
+  const validateOiSubmission = async (): Promise<{ valid: boolean; problemTitle: string }> => {
+    const { data: oinnovationData, error } = await supabase
+      .from("open_innovation_submissions")
+      .select("problem_title")
+      .eq("user_email", oiEmail)
+      .eq("problem_id", oiProblemId)
+      .single();
+
+    if (error || !oinnovationData) {
+      return { valid: false, problemTitle: "" };
+    }
+
+    return { valid: true, problemTitle: oinnovationData.problem_title };
+  };
+
   const handleRegister = async (e: any) => {
     e.preventDefault();
     
-    // Validate track/problem selection
-    if (!track) {
-      alert("Please select a track");
-      return;
-    }
-
-    if (!probId) {
-      alert("Please select a problem");
+    if (!teamName || !oiEmail || !oiProblemId) {
+      alert("Please fill in all required fields");
       return;
     }
 
     setLoading(true);
 
+    // Validate Open Innovation email + problem_id
+    const validation = await validateOiSubmission();
+    
+    if (!validation.valid) {
+      setLoading(false);
+      return setModal({
+        show: true,
+        type: 'denied',
+        message: "Invalid email or problem ID. Please verify your submission details."
+      });
+    }
+
+    setOiProblemTitle(validation.problemTitle);
+
     // 1. Process Members: Forced Uppercase & Generated Password
     const processedMembers = members.map(m => {
         const cleanReg = m.reg_number.trim().toUpperCase();
-        const cleanPhone = m.phone.replace(/\D/g, ''); // Extract only digits
-        
-        // Pattern: RegNo (minus last digit) + Phone (last 5 digits)
+        const cleanPhone = m.phone.replace(/\D/g, '');
         const generatedPassword = cleanReg.slice(0, -1) + cleanPhone.slice(-5);
 
         return {
@@ -156,17 +155,21 @@ function RegisterForm() {
 
     const genId = `TI26-${teamName.substring(0,3).toUpperCase()}-${Math.random().toString(36).substring(2,7).toUpperCase()}`;
 
-    // 4. Save Team
+    // 4. Save Team with Open Innovation
     const { data: team, error: tErr } = await supabase.from("teams").insert([{
       team_name: teamName.toUpperCase(), 
       hackathon_id: genId, 
       lead_email: leadEmail,
-      track, 
-      problem_id: probId, 
-      problem_name: probName
+      track: "Open Innovation", 
+      problem_id: oiProblemId, 
+      problem_name: validation.problemTitle
     }]).select().single();
 
-    if (tErr) { setLoading(false); return setModal({ show: true, type: 'denied', message: "" }); }
+    if (tErr) { 
+      console.error("Team creation error:", tErr);
+      setLoading(false); 
+      return setModal({ show: true, type: 'denied', message: `Team creation failed: ${tErr.message}` }); 
+    }
 
     // 5. Save Participants with Generated Passwords
     const { error: pErr } = await supabase.from("participants").insert(
@@ -180,7 +183,7 @@ function RegisterForm() {
     }
 
     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#a371f7', '#ffffff'] });
-    setModal({ show: true, type: 'success', message: cfg?.success_title || "Congratulations! You have Registered Successful.", id: genId });
+    setModal({ show: true, type: 'success', message: cfg?.success_title || "Congratulations! You have Registered Successfully.", id: genId });
     setLoading(false);
   };
 
@@ -201,7 +204,7 @@ function RegisterForm() {
               ) : (
                 <>
                   <ShieldAlert size={48} className="text-red-500 mx-auto mb-4" />
-                  <h2 className="text-2xl font-bold text-white uppercase mb-2">Already Registered</h2>
+                  <h2 className="text-2xl font-bold text-white uppercase mb-2">Registration Failed</h2>
                 </>
               )}
               <p className="text-[#8b949e] text-sm mb-6">{modal.message}</p>
@@ -220,53 +223,50 @@ function RegisterForm() {
       </AnimatePresence>
 
       <div className="max-w-5xl mx-auto">
-        <Link href="/" className="inline-flex items-center gap-2 text-[#8b949e] hover:text-[#a371f7] transition-colors mb-8 text-sm group">
+        <Link href="/register" className="inline-flex items-center gap-2 text-[#8b949e] hover:text-[#a371f7] transition-colors mb-8 text-sm group">
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
-          <span>Dashboard</span>
+          <span>Back to Registration</span>
         </Link>
 
         <header className="mb-12">
-    
-          <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight uppercase">Team <span className="text-[#a371f7]">Registration</span></h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight uppercase">Open Innovation <span className="text-[#a371f7]">Registration</span></h1>
         </header>
         
         <form onSubmit={handleRegister} className="space-y-8">
+          {/* Team & OI Details Section */}
           <section className="bg-[#161b22] p-8 rounded-xl border border-[#30363d]">
-             
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <h2 className="text-lg font-bold text-[#a371f7] uppercase mb-6 tracking-tight">Your Open Innovation Submission</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#8b949e] ml-1">Team Name</label>
+                <input required placeholder="Enter Team Name" value={teamName} onChange={e => setTeamName(e.target.value)} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm uppercase" />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#8b949e] ml-1">Your Email</label>
+                <input type="email" required placeholder="your@email.com" value={oiEmail} onChange={e => setOiEmail(e.target.value)} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm" />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#8b949e] ml-1">Problem ID</label>
+                <input type="text" required placeholder="e.g., OI-001" value={oiProblemId} onChange={e => setOiProblemId(e.target.value.toUpperCase())} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm uppercase font-mono" />
+              </div>
+
+              {oiProblemTitle && (
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-[#8b949e] ml-1">Team Name</label>
-                  <input required placeholder="Enter Team Name" value={teamName} onChange={e => setTeamName(e.target.value)} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm uppercase" />
+                  <label className="text-xs font-medium text-[#8b949e] ml-1">Your Problem Title</label>
+                  <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold">
+                    {oiProblemTitle}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-[#8b949e] ml-1">Select Track</label>
-                  <select 
-                    required 
-                    value={track} 
-                    onChange={e => {
-                      const selectedTrack = e.target.value;
-                      if (selectedTrack === "Open Innovation") {
-                        // Redirect to separate Open Innovation registration page
-                        setTimeout(() => {
-                          window.location.href = "/register/open-innovation";
-                        }, 0);
-                        return;
-                      }
-                      setTrack(selectedTrack); 
-                      setProbId("");     
-                      setProbName("");
-                    }} 
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm appearance-none cursor-pointer"
-                  >
-                    <option value="">Select Track</option>
-                    {availableTracks.map(t => <option key={t} value={t}>{t}</option>)}
-                    <option value="Open Innovation">Open Innovation (Separate Page)</option>
-                  </select>
-                </div>
-             </div>
+              )}
+            </div>
           </section>
 
+          {/* Team Members Section */}
           <div className="space-y-4">
+            <h2 className="text-lg font-bold text-white uppercase tracking-tight">Team Members</h2>
             <AnimatePresence initial={false}>
               {members.map((m, i) => (
                 <motion.div 
@@ -347,38 +347,9 @@ function RegisterForm() {
             )}
           </div>
 
-          <div className="bg-[#161b22] p-8 rounded-xl border border-[#30363d]">
-            <div className="w-full md:w-1/3">
-              <label className="text-[10px] font-bold text-[#8b949e] uppercase mb-2 block">Problem ID</label>
-              <select 
-                required 
-                value={probId} 
-                onChange={e => {
-                  const pid = e.target.value;
-                  setProbId(pid);
-                  const p = dbProblems.find(x => x.id === pid);
-                  setProbName(p?.problem_title || "");
-                }} 
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 text-white outline-none focus:border-[#a371f7] transition-colors text-sm appearance-none cursor-pointer"
-              >
-                <option value="">Select ID</option>
-                {dbProblems.filter(p => p.track_name === track).map(p => (
-                  <option key={p.id} value={p.id}>{p.id}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex-1 mt-6 md:mt-0">
-              <div className="flex items-center gap-2 mb-2">
-                <label className="text-[10px] font-bold text-[#8b949e] uppercase">Problem Title</label>
-              </div>
-              <div className="text-lg font-bold text-white leading-tight underline decoration-[#a371f7]/30 min-h-[3rem]">
-                {probName || "---"}
-              </div>
-            </div>
-          </div>
-
+          {/* Submit Button */}
           <button type="submit" disabled={loading} className="w-full py-4 bg-[#a371f7] hover:bg-[#b388f9] disabled:opacity-50 text-white font-bold uppercase rounded-md shadow-lg transition-all tracking-widest">
-            {loading ? "Registering..." : "Submit"}
+            {loading ? "Registering..." : "Register Team"}
           </button>
         </form>
       </div>

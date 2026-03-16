@@ -7,7 +7,15 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const scrollTimer = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 📐 RESTORED: Your original 1700px path
   const pathD = "M 200 0 C 350 250, 50 500, 200 750 C 350 1000, 50 1250, 200 1500 L 200 1650";
@@ -89,7 +97,7 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
                   {/* Your Robot Head */}
                   <motion.div 
                     animate={isFinished ? { y: [0, -12, 0] } : (isScrolling ? { y: [0, 3, 0] } : { y: 0 })}
-                    transition={{ repeat: Infinity, duration: 0.35 }}
+                    transition={{ repeat: Infinity, duration: isMobile ? 0.6 : 0.35 }}
                     className="w-12 h-10 bg-[#1c2128] border-2 border-[#8957e5] mx-auto relative z-20 shadow-[0_0_15px_rgba(137,87,229,0.4)] rounded-sm"
                   >
                     <div className="absolute top-3 left-3 flex gap-2">
@@ -107,20 +115,20 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
                   <div className="absolute top-10 w-full flex justify-between px-[-2px]">
                      <motion.div 
                         animate={isFinished ? { rotate: [0, 160, 0] } : (isScrolling ? { rotate: [0, 45, -45, 0] } : { rotate: 0 })}
-                        transition={{ repeat: Infinity, duration: 0.4 }}
+                        transition={{ repeat: Infinity, duration: isMobile ? 0.8 : 0.4 }}
                         className="w-2.5 h-5 bg-[#8957e5] origin-top rounded-sm border border-white"
                      />
                      <motion.div 
                         animate={isFinished ? { rotate: [0, -160, 0] } : (isScrolling ? { rotate: [0, -45, 45, 0] } : { rotate: 0 })}
-                        transition={{ repeat: Infinity, duration: 0.4 }}
+                        transition={{ repeat: Infinity, duration: isMobile ? 0.8 : 0.4 }}
                         className="w-2.5 h-5 bg-[#8957e5] origin-top rounded-sm border border-white"
                      />
                   </div>
 
                   {/* Your Robot Legs */}
                   <div className="flex justify-center gap-1.5 -mt-0.5">
-                     <motion.div animate={isScrolling ? { height: [10, 5, 10] } : { height: 10 }} transition={{ repeat: Infinity, duration: 0.2 }} className="w-3.5 h-3 bg-[#333] border border-white" />
-                     <motion.div animate={isScrolling ? { height: [5, 10, 5] } : { height: 10 }} transition={{ repeat: Infinity, duration: 0.2, delay: 0.1 }} className="w-3.5 h-3 bg-[#333] border border-white" />
+                     <motion.div animate={isScrolling ? { height: [10, 5, 10] } : { height: 10 }} transition={{ repeat: Infinity, duration: isMobile ? 0.4 : 0.2 }} className="w-3.5 h-3 bg-[#333] border border-white" />
+                     <motion.div animate={isScrolling ? { height: [5, 10, 5] } : { height: 10 }} transition={{ repeat: Infinity, duration: isMobile ? 0.4 : 0.2, delay: 0.1 }} className="w-3.5 h-3 bg-[#333] border border-white" />
                   </div>
                </div>
             </div>
@@ -140,12 +148,12 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
     return (
      <div key={index} className="absolute w-full flex items-center pointer-events-none" style={{ top: `${topPos}px` }}>
        <div 
-         className={`pointer-events-auto relative z-30 px-2 transition-all duration-300
+         className={`pointer-events-auto relative z-30 px-3 md:px-2 transition-all duration-300
            ${isLeftSide 
-             ? 'mr-auto text-left -ml-6 md:-ml-24 lg:-ml-48' // 💡 Pushes text further left on desktop
-             : 'ml-auto text-right mr-6 md:-mr-24 lg:-mr-48' // 💡 Pushes text further right on desktop
+             ? 'mr-auto text-left md:-ml-24 lg:-ml-48' // Reduced negative margins on mobile
+             : 'ml-auto text-right md:-mr-24 lg:-mr-48' // Reduced negative margins on mobile
            } 
-           w-[50%] md:w-[70%] lg:w-[80%]`} // 💡 Wider container for desktop paragraphs
+           w-[calc(50%-20px)] md:w-[70%] lg:w-[80%]`} // Adjusted width for mobile
          style={{
            transform: typeof window !== 'undefined' && window.innerWidth < 768 
              ? `translateX(${isLeftSide ? mobileLeftNudge : mobileRightNudge}px)` 
@@ -155,20 +163,20 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }} 
             whileInView={{ opacity: 1, scale: 1 }}
-            className="max-w-md lg:max-w-xl" // 💡 Keeps text from stretching into infinity
+            className="max-w-xs md:max-w-md lg:max-w-xl" // Smaller max-width on mobile
           >
-             <h3 className="text-white font-black text-xl md:text-5xl uppercase tracking-tighter leading-none mb-1 drop-shadow-md">
+             <h3 className="text-white font-black text-xs md:text-xl lg:text-5xl uppercase tracking-tighter leading-none mb-1 drop-shadow-md">
                {item.title}
              </h3>
-             <div className={`flex items-center gap-2 ${!isLeftSide && 'flex-row-reverse'}`}>
-               <span className="text-[#8957e5] font-mono font-bold text-[8px] md:text-sm">{item.time}</span>
+             <div className={`flex items-center gap-2 text-[7px] md:text-xs ${!isLeftSide && 'flex-row-reverse'}`}>
+               <span className="text-[#8957e5] font-mono font-bold whitespace-nowrap">{item.time}</span>
                <div className="h-[1px] flex-1 bg-[#8957e5]/20" />
              </div>
              
              {/* 💡 THE PARAGRAPH: Truncated on mobile, full on desktop */}
-             <p className="text-white/60 text-[10px] md:text-base font-mono leading-relaxed mt-2">
+             <p className="text-white/60 text-[9px] md:text-sm lg:text-base font-mono leading-relaxed mt-2">
                 <span className="md:hidden">
-                  {item.desc.length > 60 ? `${item.desc.substring(0, 60)}...` : item.desc}
+                  {item.desc.length > 50 ? `${item.desc.substring(0, 50)}...` : item.desc}
                 </span>
                 <span className="hidden md:inline">
                   {item.desc}
