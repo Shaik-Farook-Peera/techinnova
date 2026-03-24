@@ -387,7 +387,7 @@ export default function OpenInnovation() {
         >
           <h2 className="text-xl font-bold text-[#a371f7] uppercase mb-6 tracking-tight">Rules & Requirements</h2>
           <div className="space-y-4">
-            {displayRules.map((rule, index) => (
+            {displayRules.map((rule: string, index: number) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -10 }}
