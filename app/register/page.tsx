@@ -103,7 +103,6 @@ function RegisterForm() {
 
     setLoading(true);
 
-    // 🔐 VALIDATE: Problem ID + Lead Email must exist in open_innovation table
     const leadEmail = members[0].email;
     
     if (!leadEmail) {
@@ -112,20 +111,23 @@ function RegisterForm() {
       return;
     }
 
-    const { data: oiRecord, error: oiError } = await supabase
-      .from("open_innovation")
-      .select("*")
-      .eq("problem_id", probId)
-      .eq("email", leadEmail)
-      .single();
+    // 🔐 VALIDATE: Problem ID + Lead Email ONLY for Open Innovation track
+    if (track === "Open Innovation") {
+      const { data: oiRecord, error: oiError } = await supabase
+        .from("open_innovation")
+        .select("*")
+        .eq("problem_id", probId)
+        .eq("email", leadEmail)
+        .single();
 
-    if (!oiRecord) {
-      setLoading(false);
-      return setModal({
-        show: true, 
-        type: 'denied', 
-        message: `Invalid Problem ID or Email combination. The Problem ID (${probId}) must match the email (${leadEmail}) from your Open Innovation submission.`
-      });
+      if (!oiRecord) {
+        setLoading(false)
+        return setModal({
+          show: true, 
+          type: 'denied', 
+          message: `Invalid Problem ID or Email combination. The Problem ID (${probId}) must match the email (${leadEmail}) from your Open Innovation submission.`
+        });
+      }
     }
 
     // 1. Process Members: Forced Uppercase & Generated Password
@@ -162,20 +164,22 @@ function RegisterForm() {
       });
     }
 
-    // 🔐 CHECK IF ANY EMAIL EXISTS IN OPEN_INNOVATION TABLE
-    const { data: existingOI } = await supabase
-      .from("open_innovation")
-      .select("email")
-      .in("email", emails);
+    // 🔐 CHECK IF ANY EMAIL EXISTS IN OPEN_INNOVATION TABLE - Only for Open Innovation Track
+    if (track === "Open Innovation") {
+      const { data: existingOI } = await supabase
+        .from("open_innovation")
+        .select("email")
+        .in("email", emails);
 
-    if (existingOI && existingOI.length > 0) {
-      setLoading(false);
-      return setModal({
-        show: true, 
-        type: 'denied', 
-        message: `You are already registered with this email.`,
-        email: leadEmail
-      });
+      if (existingOI && existingOI.length > 0) {
+        setLoading(false);
+        return setModal({
+          show: true, 
+          type: 'denied', 
+          message: `You are already registered with this email.`,
+          email: leadEmail
+        });
+      }
     }
 
     // 2. Pre-emptive DB Check: Leader Email (check if already registered in teams table)
@@ -373,17 +377,12 @@ function RegisterForm() {
         })
       });
       
-      // Show success modal instead of alert
+      // Show success modal - keep open until user closes
       setModal({
         show: true,
         type: 'success',
         message: 'Email sent successfully to ' + modal.email
       });
-      
-      // Auto-close after 2 seconds
-      setTimeout(() => {
-        setModal({ show: false, type: 'duplicate', message: "" });
-      }, 2000);
       
     } catch (error) {
       console.error('Error resending email:', error);

@@ -6,17 +6,19 @@ export async function POST(request: NextRequest) {
   try {
     const { email, teamName, problemId, problemTitle, subject, htmlContent, isTeamRegistration } = await request.json();
 
-    // Configure your email service here
-    // Using environment variables for credentials
+    // Mailgun SMTP Configuration
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      host: process.env.SMTP_HOST || 'smtp.mailgun.org',
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
       },
     });
+
+    // Verify connection
+    await transporter.verify();
 
     // If custom HTML content is provided (for team registration), use it
     // Otherwise, use default Open Innovation email template
@@ -71,20 +73,21 @@ export async function POST(request: NextRequest) {
     }
 
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || 'noreply@techinnova.com',
+      from: process.env.SMTP_FROM,
       to: email,
       subject: emailSubject,
       html: emailTemplate,
     });
 
+    console.log(`✅ Email sent successfully to ${email}`);
     return NextResponse.json(
       { success: true, message: 'Email sent successfully' },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Email sending error:', error);
+    console.error('❌ Email sending error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to send email' },
+      { success: false, error: error instanceof Error ? error.message : 'Failed to send email' },
       { status: 500 }
     );
   }

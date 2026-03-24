@@ -269,10 +269,7 @@ export default function OpenInnovation() {
         message: 'Email sent successfully to ' + modal.email
       });
       
-      // Auto-close after 2 seconds
-      setTimeout(() => {
-        setModal({ show: false, type: 'duplicate', message: "" });
-      }, 2000);
+      // Success modal stays open until user closes
       
     } catch (error) {
       console.error('Error resending email:', error);
