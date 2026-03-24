@@ -22,7 +22,7 @@ function RegisterForm() {
   const initialProbId = searchParams.get("probId") || "";
 
   const [loading, setLoading] = useState(false);
-  const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' | 'duplicate'; message: string; id?: string; whatsappLink?: string; email?: string }>({ 
+  const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' | 'duplicate' | 'error'; message: string; id?: string; whatsappLink?: string; email?: string }>({ 
     show: false, type: 'success', message: "" 
   });
   
@@ -438,6 +438,11 @@ function RegisterForm() {
                 </div>
               )}
               {modal.type === 'denied' && !modal.email && (
+                <button onClick={() => setModal({ ...modal, show: false })} className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
+                  OK
+                </button>
+              )}
+              {modal.type === 'error' && (
                 <button onClick={() => setModal({ ...modal, show: false })} className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
                   OK
                 </button>
