@@ -22,7 +22,7 @@ function RegisterForm() {
   const initialProbId = searchParams.get("probId") || "";
 
   const [loading, setLoading] = useState(false);
-  const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied'; message: string; id?: string; whatsappLink?: string; email?: string }>({ 
+  const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' | 'duplicate'; message: string; id?: string; whatsappLink?: string; email?: string }>({ 
     show: false, type: 'success', message: "" 
   });
   
