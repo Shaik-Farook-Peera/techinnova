@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Terminal, Lightbulb, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Terminal, Lightbulb, ArrowLeft, CheckCircle2, ShieldAlert, Mail } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function OpenInnovation() {
@@ -22,6 +22,9 @@ export default function OpenInnovation() {
   const [agreedToRules, setAgreedToRules] = useState(false);
   const [config, setConfig] = useState<any>(null);
   const [assignedProblemId, setAssignedProblemId] = useState<string>("");
+  const [modal, setModal] = useState<{ show: boolean; type: 'duplicate' | 'error' | 'success'; message: string; id?: string; whatsappLink?: string; email?: string; problemId?: string }>({ 
+    show: false, type: 'duplicate', message: "" 
+  });
 
   useEffect(() => {
     fetchConfig();
@@ -72,6 +75,43 @@ export default function OpenInnovation() {
     setLoading(true);
 
     try {
+      // 🔐 CHECK IF EMAIL ALREADY HAS AN OPEN INNOVATION SUBMISSION
+      const { data: existingSubmission, error: checkError } = await supabase
+        .from('open_innovation_submissions')
+        .select('problem_id, user_email')
+        .eq('user_email', formData.memberEmail.trim().toLowerCase());
+
+      if (checkError) throw checkError;
+
+      if (existingSubmission && existingSubmission.length > 0) {
+        setLoading(false);
+        return setModal({
+          show: true,
+          type: 'duplicate',
+          message: 'You have already registered with this email. Please verify your email or resend email again.',
+          email: formData.memberEmail.trim().toLowerCase(),
+          problemId: existingSubmission[0].problem_id
+        });
+      }
+
+      // 🔐 CHECK IF EMAIL IS ALREADY IN PARTICIPANTS TABLE (other tracks)
+      const { data: existingParticipant, error: participantError } = await supabase
+        .from('participants')
+        .select('email')
+        .eq('email', formData.memberEmail.trim().toLowerCase());
+
+      if (participantError) throw participantError;
+
+      if (existingParticipant && existingParticipant.length > 0) {
+        setLoading(false);
+        return setModal({
+          show: true,
+          type: 'duplicate',
+          message: 'You are already registered for another track. You can only register for one track.',
+          email: formData.memberEmail.trim().toLowerCase()
+        });
+      }
+
       // Generate a unique problem_id for this submission
       const { count, error: countError } = await supabase
         .from('open_innovation_submissions')
@@ -87,7 +127,7 @@ export default function OpenInnovation() {
         .insert([
           {
             team_name: formData.teamName,
-            user_email: formData.memberEmail,
+            user_email: formData.memberEmail.trim().toLowerCase(),
             problem_title: formData.problemTitle,
             problem_description: formData.problemDescription,
             affected_audience: formData.affectedAudience,
@@ -100,9 +140,12 @@ export default function OpenInnovation() {
 
       if (error) {
         console.error("Error submitting idea:", error);
-        alert("Failed to submit. Please try again.");
         setLoading(false);
-        return;
+        return setModal({
+          show: true,
+          type: 'error',
+          message: 'Failed to submit. Please try again.'
+        });
       }
 
       // Store email and problem_id in localStorage
@@ -145,15 +188,158 @@ export default function OpenInnovation() {
       }, 5000);
     } catch (error) {
       console.error("Error submitting idea:", error);
-      alert("An error occurred. Please try again.");
+      setLoading(false);
+      setModal({
+        show: true,
+        type: 'error',
+        message: 'An error occurred. Please try again.'
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!modal.email) return;
+    
+    try {
+      let emailHtml = '';
+      
+      if (modal.problemId) {
+        // Open Innovation with Problem ID
+        emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0d1117; color: #c9d1d9; padding: 20px;">
+            <div style="border-left: 4px solid #a371f7; padding-left: 20px; margin-bottom: 30px;">
+              <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px;">Your Problem ID</h1>
+              <p style="color: #8b949e; margin: 0;">Registration confirmation</p>
+            </div>
+            
+            <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #8b949e; margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Problem ID</p>
+              <div style="background-color: #0d1117; border: 2px solid #a371f7; padding: 20px; border-radius: 6px; text-align: center;">
+                <p style="color: #a371f7; margin: 0; font-size: 32px; font-weight: bold; font-family: 'Courier New', monospace;">${modal.problemId}</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; color: #8b949e; font-size: 12px; border-top: 1px solid #30363d; padding-top: 20px;">
+              <p style="margin: 0;">TECHINNOVA 2026</p>
+              <p style="margin: 5px 0 0 0;">Keep this Problem ID safe for your records.</p>
+            </div>
+          </div>
+        `;
+      } else {
+        // Cross-track registration confirmation
+        emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0d1117; color: #c9d1d9; padding: 20px;">
+            <div style="border-left: 4px solid #a371f7; padding-left: 20px; margin-bottom: 30px;">
+              <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px;">Registration Confirmation</h1>
+              <p style="color: #8b949e; margin: 0;">TECHINNOVA 2026</p>
+            </div>
+            
+            <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #8b949e; margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Email</p>
+              <p style="color: #ffffff; margin: 0 0 20px 0; font-size: 14px;">${modal.email}</p>
+            </div>
+            
+            <div style="text-align: center; color: #8b949e; font-size: 12px; border-top: 1px solid #30363d; padding-top: 20px;">
+              <p style="margin: 0;">TECHINNOVA 2026</p>
+              <p style="margin: 5px 0 0 0;">If you have any questions, contact the organizing committee.</p>
+            </div>
+          </div>
+        `;
+      }
+      
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: modal.email,
+          teamName: 'Team',
+          problemId: modal.problemId || 'N/A',
+          subject: `Registration Confirmation - TECHINNOVA 2026`,
+          htmlContent: emailHtml,
+          isTeamRegistration: true
+        })
+      });
+      
+      // Show success modal instead of alert
+      setModal({
+        show: true,
+        type: 'success',
+        message: 'Email sent successfully to ' + modal.email
+      });
+      
+      // Auto-close after 2 seconds
+      setTimeout(() => {
+        setModal({ show: false, type: 'duplicate', message: "" });
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error resending email:', error);
+      setModal({
+        show: true,
+        type: 'error',
+        message: 'Failed to resend email.'
+      });
     }
   };
 
   return (
     <main className="min-h-screen bg-[#0d1117] text-[#c9d1d9] pt-32 pb-20 px-6 font-sans">
       <Navbar />
+
+      <AnimatePresence>
+        {modal.show && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#0d1117]/90 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`max-w-md w-full p-8 rounded-2xl border ${modal.type === 'success' ? 'border-[#a371f7]/30 bg-[#161b22]' : 'border-red-500/30 bg-[#161b22]'} shadow-2xl text-center relative overflow-hidden`}>
+              <div className={`absolute top-0 left-0 w-full h-1 ${modal.type === 'success' ? 'bg-[#a371f7]' : 'bg-red-500'}`} />
+              {modal.type === 'success' ? (
+                <CheckCircle2 size={48} className="text-[#a371f7] mx-auto mb-4" />
+              ) : (
+                <ShieldAlert size={48} className="text-red-500 mx-auto mb-4" />
+              )}
+              <h2 className="text-xl font-bold text-white uppercase mb-2">{modal.type === 'success' ? 'Email Sent Successfully' : 'Already Registered'}</h2>
+              <p className="text-[#8b949e] text-sm mb-6">{modal.message}</p>
+              
+              {modal.type === 'duplicate' && modal.problemId && (
+                <div className="bg-[#0d1117] border border-[#30363d] py-3 px-4 rounded-lg mb-6">
+                  <p className="text-[10px] text-[#8b949e] uppercase tracking-widest mb-1">Your Problem ID</p>
+                  <span className="text-[#a371f7] text-lg font-mono font-bold tracking-wider">{modal.problemId}</span>
+                </div>
+              )}
+              
+              {modal.type === 'duplicate' && modal.email && (
+                <div className="flex gap-3">
+                  <button onClick={handleResendEmail} className="flex-1 py-3 bg-[#a371f7] hover:bg-[#b388f9] text-white font-bold rounded-md transition-colors uppercase text-sm flex items-center justify-center gap-2">
+                    <Mail size={16} /> Resend Email
+                  </button>
+                  <button onClick={() => setModal({ ...modal, show: false })} className="flex-1 py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
+                    Close
+                  </button>
+                </div>
+              )}
+              
+              {modal.type === 'duplicate' && !modal.email && (
+                <button onClick={() => setModal({ ...modal, show: false })} className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
+                  Close
+                </button>
+              )}
+              
+              {modal.type === 'error' && (
+                <button onClick={() => setModal({ ...modal, show: false })} className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
+                  OK
+                </button>
+              )}
+
+              {modal.type === 'success' && (
+                <button onClick={() => setModal({ ...modal, show: false })} className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
+                  Close
+                </button>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <div className="max-w-5xl mx-auto">
         {/* Back Button */}
@@ -387,7 +573,7 @@ export default function OpenInnovation() {
             >
               <CheckCircle2 size={48} className="text-[#a371f7]" />
             </motion.div>
-            <h3 className="text-2xl font-bold text-white uppercase mb-3">Submission Received!</h3>
+            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white uppercase mb-3">Submission Received!</h3>
             <p className="text-[#8b949e] mb-6">
               Thank you for your innovative idea! Our team will review your submission. Your problem ID has been sent to <span className="text-[#a371f7] font-semibold">{formData.memberEmail}</span>.
             </p>

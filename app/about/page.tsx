@@ -107,7 +107,7 @@ export default function AboutAndCoordinators() {
             About <span className="text-[#a371f7]">IIC</span>
           </h1>
           
-          <div className="max-w-3xl p-6 bg-[#161b22] border border-[#30363d] rounded-xl">
+          <div className="w-full p-6 bg-[#161b22] border border-[#30363d] rounded-xl">
             <p className="text-sm md:text-base text-[#8b949e] leading-relaxed font-medium">
               {config?.about_iic || "About IIC is currently being updating..."}
             </p>
@@ -121,7 +121,7 @@ export default function AboutAndCoordinators() {
              <h1 className="text-4xl md:text-6xl font-bold text-white uppercase mb-8 tracking-tighter">
             About <span className="text-[#a371f7]">TechInnova</span>
           </h1>
-             <div className="max-w-3xl p-6 bg-[#161b22] border border-[#30363d] rounded-xl">
+             <div className="w-full p-6 bg-[#161b22] border border-[#30363d] rounded-xl">
             <p className="text-sm md:text-base text-[#8b949e] leading-relaxed font-medium">
               {config?.about_event || "About  is currently being updating..."}
             </p>

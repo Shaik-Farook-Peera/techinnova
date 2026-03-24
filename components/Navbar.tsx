@@ -76,21 +76,43 @@ export default function Navbar() {
       return;
     }
 
+    // If clicking "home", always go to home page
+    if (id === 'home') {
+      router.push('/');
+      return;
+    }
+
     if (pathname === "/") {
+      // Already on home page - scroll to section
       const section = document.getElementById(id);
-      if (section) window.scrollTo({ top: section.offsetTop - 80, behavior: "smooth" });
+      if (section) {
+        setTimeout(() => {
+          section.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
     } else {
-      router.push(`/#${id}`);
+      // On other pages (about, gallery, faq, etc) - navigate to home, then scroll
+      router.push('/', undefined);
+      
+      // Longer delay to ensure page renders and sections are available
+      const scrollTimeout = setTimeout(() => {
+        const section = document.getElementById(id);
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth", block: "start" });
+          clearTimeout(scrollTimeout);
+        }
+      }, 1000);
     }
   };
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-[200] transition-all duration-300 border-b ${
-  // Trigger solid background if scrolled OR if we are not in the "home" section
-  scrolled || activeSection !== "home" || pathname !== "/" 
-  ? "bg-[#000000] border-[#30363d] shadow-md py-3" // Solid black background
-  : "bg-transparent border-transparent py-4"      // Transparent at the very top of Home
-}`}>
+    <nav className={`fixed top-0 left-0 w-full z-[200] transition-all duration-300 border-b 
+      ${pathname === "/" && !scrolled && activeSection === "home"
+        ? "bg-transparent border-transparent py-4"  
+        : scrolled || activeSection !== "home" || pathname !== "/"
+        ? "bg-[#0f1419] border-[#30363d] shadow-md py-3"  
+        : "bg-transparent border-transparent py-4"
+    }`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
         
         {/* BRAND */}

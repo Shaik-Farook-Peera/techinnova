@@ -17,7 +17,7 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 📐 RESTORED: Your original 1700px path
+  // 📐 ORIGINAL: Your original 1700px path
   const pathD = "M 200 0 C 350 250, 50 500, 200 750 C 350 1000, 50 1250, 200 1500 L 200 1650";
 
   const { scrollYProgress } = useScroll({
@@ -55,25 +55,24 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
   return (
     // 💡 Tightened the section padding to pull the FAQ up
     <section id="timeline" className="relative pt-12 pb-0 bg-inherit px-4 overflow-hidden">
-      <div className="relative z-10 w-full max-w-6xl mx-auto">
-
+        <div className="relative z-10 w-full max-w-6xl mx-auto">
         {/* RESTORED: Your original 1700px container */}
         <div ref={containerRef} className="relative h-[1700px] w-[400px] mx-auto overflow-visible">
           
           <CampusScenery />
 
-          {/* 🛤️ ROAD SVG */}
+          {/* 🛤️ ORIGINAL ROAD SVG */}
           <svg viewBox="0 0 400 1700" className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
             <path d={pathD} stroke="#30363d" strokeWidth="80" fill="none" strokeLinecap="round" />
             <path d={pathD} stroke="#161b22" strokeWidth="60" fill="none" strokeLinecap="round" />
-            <path d={pathD} stroke="#8957e5" strokeWidth="3" fill="none" strokeDasharray="15 15" className="opacity-30" />
+            <path d={pathD} stroke="#8957e5" strokeWidth="3" fill="none" strokeDasharray="15 15" opacity="0.3" />
             <motion.path 
                 d={pathD} 
                 stroke="#8957e5" 
                 strokeWidth="4" 
                 fill="none" 
                 style={{ pathLength: useTransform(smoothProgress, [0, 0.90], [0, 1], { clamp: true }) }} 
-                className="drop-shadow-[0_0_12px_#8957e5]" 
+                filter="drop-shadow(0 0 12px #8957e5)"
             />
           </svg>
 
@@ -94,10 +93,11 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
                     </motion.div>
                   )}
 
+                  {/* ORIGINAL ROBOT DESIGN */}
                   {/* Your Robot Head */}
                   <motion.div 
                     animate={isFinished ? { y: [0, -12, 0] } : (isScrolling ? { y: [0, 3, 0] } : { y: 0 })}
-                    transition={{ repeat: Infinity, duration: isMobile ? 0.6 : 0.35 }}
+                    transition={{ repeat: Infinity, duration: isMobile ? 0.6 : 0.8 }}
                     className="w-12 h-10 bg-[#1c2128] border-2 border-[#8957e5] mx-auto relative z-20 shadow-[0_0_15px_rgba(137,87,229,0.4)] rounded-sm"
                   >
                     <div className="absolute top-3 left-3 flex gap-2">
@@ -142,18 +142,18 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
     const rightSideVerticalOffset = 250; 
     const topPos = baseTop + (isLeftSide ? leftSideVerticalOffset : rightSideVerticalOffset);
 
-    const mobileLeftNudge = 30;   
-    const mobileRightNudge = -40; 
+    const mobileLeftNudge = 90;   
+    const mobileRightNudge = -90; 
 
     return (
      <div key={index} className="absolute w-full flex items-center pointer-events-none" style={{ top: `${topPos}px` }}>
        <div 
          className={`pointer-events-auto relative z-30 px-3 md:px-2 transition-all duration-300
            ${isLeftSide 
-             ? 'mr-auto text-left md:-ml-24 lg:-ml-48' // Reduced negative margins on mobile
-             : 'ml-auto text-right md:-mr-24 lg:-mr-48' // Reduced negative margins on mobile
+             ? 'mr-auto text-left' 
+             : 'ml-auto text-right'
            } 
-           w-[calc(50%-20px)] md:w-[70%] lg:w-[80%]`} // Adjusted width for mobile
+           w-[calc(50%-40px)] md:w-[70%] lg:w-[80%]`}
          style={{
            transform: typeof window !== 'undefined' && window.innerWidth < 768 
              ? `translateX(${isLeftSide ? mobileLeftNudge : mobileRightNudge}px)` 
@@ -163,24 +163,19 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }} 
             whileInView={{ opacity: 1, scale: 1 }}
-            className="max-w-xs md:max-w-md lg:max-w-xl" // Smaller max-width on mobile
+            className="max-w-xs md:max-w-md lg:max-w-xl"
           >
-             <h3 className="text-white font-black text-xs md:text-xl lg:text-5xl uppercase tracking-tighter leading-none mb-1 drop-shadow-md">
+             <h3 className="text-white font-black text-base md:text-lg lg:text-2xl uppercase tracking-tighter leading-none mb-1 drop-shadow-md">
                {item.title}
              </h3>
-             <div className={`flex items-center gap-2 text-[7px] md:text-xs ${!isLeftSide && 'flex-row-reverse'}`}>
+             <div className={`flex items-center gap-2 text-sm md:text-xs ${!isLeftSide && 'flex-row-reverse'}`}>
                <span className="text-[#8957e5] font-mono font-bold whitespace-nowrap">{item.time}</span>
                <div className="h-[1px] flex-1 bg-[#8957e5]/20" />
              </div>
              
-             {/* 💡 THE PARAGRAPH: Truncated on mobile, full on desktop */}
-             <p className="text-white/60 text-[9px] md:text-sm lg:text-base font-mono leading-relaxed mt-2">
-                <span className="md:hidden">
-                  {item.desc.length > 50 ? `${item.desc.substring(0, 50)}...` : item.desc}
-                </span>
-                <span className="hidden md:inline">
-                  {item.desc}
-                </span>
+             {/* 💡 THE PARAGRAPH: Full text on mobile, visible beside road */}
+             <p className="text-white/60 text-xs md:text-sm lg:text-base font-mono leading-relaxed mt-2">
+                {item.desc}
              </p>
           </motion.div>
        </div>
@@ -197,7 +192,7 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
              </div>
           </div>
         </div>
-      </div>
+        </div>
     </section>
   );
 }
@@ -205,20 +200,23 @@ export default function Timeline({ timeline }: { timeline?: any[] }) {
 function CampusScenery() {
     return (
       <div className="absolute inset-0 pointer-events-none w-full h-full" style={{ zIndex: 5 }}>
-        <SceneryItem top="50px" left="2%" icon={<Landmark size={60} />} label="MAIN_BLOCK" color="#f2cc60" />
-        <SceneryItem top="450px" right="20%" icon={<Building2 size={60} />} label="RP_BLOCK" color="#58a6ff" />
-        <SceneryItem top="750px" left="2%" icon={<School size={60} />} label="NTR_BLOCK" color="#f778ba" />
-        <SceneryItem top="1250px" right="20%" icon={<LayoutTemplate size={60} />} label="CMB_BLOCK" color="#d29922" />
-        <SceneryItem top="1350px" left="2%" icon={<Landmark size={60} />} label="GEB" color="#f2cc60" />
+        <SceneryItem top="50px" left="2%" icon={<Landmark size={80} className="md:hidden" />} mobileIcon={<Landmark size={60} className="hidden md:inline" />} label="MAIN BLOCK" color="#f2cc60" />
+        <SceneryItem top="420px" right="28%" icon={<Building2 size={80} className="md:hidden" />} mobileIcon={<Building2 size={60} className="hidden md:inline" />} label="RP BLOCK" color="#58a6ff" />
+        <SceneryItem top="700px" left="2%" icon={<School size={80} className="md:hidden" />} mobileIcon={<School size={60} className="hidden md:inline" />} label="NTR BLOCK" color="#f778ba" />
+        <SceneryItem top="1250px" right="28%" icon={<LayoutTemplate size={80} className="md:hidden" />} mobileIcon={<LayoutTemplate size={60} className="hidden md:inline" />} label="CMB BLOCK" color="#d29922" />
+        <SceneryItem top="1350px" left="2%" icon={<Landmark size={80} className="md:hidden" />} mobileIcon={<Landmark size={60} className="hidden md:inline" />} label="GEB" color="#f2cc60" />
       </div>
     );
 }
 
-function SceneryItem({ top, left, right, icon, label, color }: any) {
+function SceneryItem({ top, left, right, icon, mobileIcon, label, color }: any) {
     return (
       <div style={{ top, left, right }} className="absolute flex flex-col items-center opacity-90 scale-90 md:scale-100">
-        <div style={{ color }}>{icon}</div>
-        <span style={{ borderColor: color, color }} className="text-[10px] md:text-sm font-black bg-[#1c2128] px-2 py-1 border-2 rounded uppercase tracking-tighter shadow-lg">
+        <div style={{ color }}>
+          {icon}
+          {mobileIcon}
+        </div>
+        <span style={{ borderColor: color, color }} className="text-sm md:text-xs font-black bg-[#1c2128] px-2 py-1 border-2 rounded uppercase tracking-tighter shadow-lg">
           {label}
         </span>
       </div>

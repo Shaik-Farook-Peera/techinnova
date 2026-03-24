@@ -50,7 +50,7 @@ export default function ProblemStatements() {
                 </span>
               </div>
 
-              <h2 className="text-2xl md:text-3xl font-bold text-white uppercase mb-6 tracking-tight leading-tight">
+              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white uppercase mb-6 tracking-tight leading-tight">
                 {selectedProblem.problem_title}
               </h2>
               
@@ -100,7 +100,7 @@ export default function ProblemStatements() {
           </h1>
         </header>
 
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {problems.map((p) => (
             <motion.div 
               key={p.id} 

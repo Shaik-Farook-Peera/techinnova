@@ -19,7 +19,7 @@ export default function HowToCode() {
   return (
     <section className="py-10 bg-inherit overflow-hidden">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-2xl md:text-3xl font-black text-white mb-6 uppercase tracking-tighter">
+        <h2 className="text-lg md:text-xl lg:text-2xl font-black text-white mb-6 uppercase tracking-tighter">
           How to <span className="text-[#8957e5]">Code</span>
         </h2>
         

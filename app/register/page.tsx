@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import { Terminal, UserPlus, ShieldAlert, CheckCircle2, ArrowLeft, Cpu, Trash2, Phone } from "lucide-react";
+import { Terminal, UserPlus, ShieldAlert, CheckCircle2, ArrowLeft, Cpu, Trash2, Phone, Mail } from "lucide-react";
 import confetti from "canvas-confetti";
 
 export default function Register() {
@@ -22,7 +22,7 @@ function RegisterForm() {
   const initialProbId = searchParams.get("probId") || "";
 
   const [loading, setLoading] = useState(false);
-  const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied'; message: string; id?: string }>({ 
+  const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied'; message: string; id?: string; whatsappLink?: string; email?: string }>({ 
     show: false, type: 'success', message: "" 
   });
   
@@ -103,6 +103,31 @@ function RegisterForm() {
 
     setLoading(true);
 
+    // 🔐 VALIDATE: Problem ID + Lead Email must exist in open_innovation table
+    const leadEmail = members[0].email;
+    
+    if (!leadEmail) {
+      setLoading(false);
+      alert("Please enter the leader's email");
+      return;
+    }
+
+    const { data: oiRecord, error: oiError } = await supabase
+      .from("open_innovation")
+      .select("*")
+      .eq("problem_id", probId)
+      .eq("email", leadEmail)
+      .single();
+
+    if (!oiRecord) {
+      setLoading(false);
+      return setModal({
+        show: true, 
+        type: 'denied', 
+        message: `Invalid Problem ID or Email combination. The Problem ID (${probId}) must match the email (${leadEmail}) from your Open Innovation submission.`
+      });
+    }
+
     // 1. Process Members: Forced Uppercase & Generated Password
     const processedMembers = members.map(m => {
         const cleanReg = m.reg_number.trim().toUpperCase();
@@ -120,9 +145,40 @@ function RegisterForm() {
 
     const regNums = processedMembers.map(m => m.reg_number);
     const emails = processedMembers.map(m => m.email);
-    const leadEmail = processedMembers[0].email;
 
-    // 2. Pre-emptive DB Check: Leader Email
+    // 🔐 CHECK IF ANY EMAIL EXISTS IN PARTICIPANTS TABLE
+    const { data: existingParticipants } = await supabase
+      .from("participants")
+      .select("email")
+      .in("email", emails);
+
+    if (existingParticipants && existingParticipants.length > 0) {
+      setLoading(false);
+      return setModal({
+        show: true, 
+        type: 'denied', 
+        message: `You are already registered with this email.`,
+        email: leadEmail
+      });
+    }
+
+    // 🔐 CHECK IF ANY EMAIL EXISTS IN OPEN_INNOVATION TABLE
+    const { data: existingOI } = await supabase
+      .from("open_innovation")
+      .select("email")
+      .in("email", emails);
+
+    if (existingOI && existingOI.length > 0) {
+      setLoading(false);
+      return setModal({
+        show: true, 
+        type: 'denied', 
+        message: `You are already registered with this email.`,
+        email: leadEmail
+      });
+    }
+
+    // 2. Pre-emptive DB Check: Leader Email (check if already registered in teams table)
     const { data: teamCheck } = await supabase
       .from("teams")
       .select("hackathon_id")
@@ -179,9 +235,164 @@ function RegisterForm() {
       return setModal({ show: true, type: 'denied', message: "Submission Error" });
     }
 
+    // 6. Send Team Registration Email
+    try {
+      const membersHtml = processedMembers.map((m, i) => `
+        <tr style="border-bottom: 1px solid #30363d;">
+          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${i + 1}</td>
+          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${m.name}</td>
+          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${m.reg_number}</td>
+          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${m.email}</td>
+          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${m.branch}</td>
+          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${m.year}</td>
+        </tr>
+      `).join('');
+
+      const emailContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; background-color: #0d1117; color: #c9d1d9; padding: 20px;">
+          <div style="border-left: 4px solid #a371f7; padding-left: 20px; margin-bottom: 30px;">
+            <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px;">Team Registration Confirmed</h1>
+            <p style="color: #8b949e; margin: 0;">Your team has been successfully registered for TECHINNOVA 2026</p>
+          </div>
+
+          <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Team Information</h3>
+            
+            <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Team Name</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">${teamName.toUpperCase()}</p>
+
+            <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Team ID</p>
+            <div style="background-color: #0d1117; border: 2px solid #a371f7; padding: 12px; border-radius: 6px; text-align: center; margin-bottom: 15px;">
+              <p style="color: #a371f7; margin: 0; font-size: 24px; font-weight: bold; font-family: 'Courier New', monospace;">${genId}</p>
+            </div>
+
+            <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Track</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${track}</p>
+
+            <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Problem ID</p>
+            <p style="color: #58a6ff; margin: 0 0 15px 0; font-size: 14px; font-weight: bold;">${probId}</p>
+
+            <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Problem Title</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${probName}</p>
+          </div>
+
+          <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Team Members</h3>
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+              <thead>
+                <tr style="border-bottom: 2px solid #a371f7;">
+                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">S.No</th>
+                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">Name</th>
+                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">Reg No</th>
+                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">Email</th>
+                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">Branch</th>
+                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">Year</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${membersHtml}
+              </tbody>
+            </table>
+          </div>
+
+          <div style="background-color: #0d1117; border-left: 2px solid #a371f7; padding: 15px; margin-bottom: 20px;">
+            <p style="color: #58a6ff; margin: 0; font-size: 12px;">
+              <strong>Important:</strong> Save your Team ID (${genId}). You'll need it for future communications and event updates.
+            </p>
+          </div>
+
+          <div style="text-align: center; background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Join Our Community</h3>
+            <p style="color: #8b949e; margin: 0 0 15px 0; font-size: 12px;">Connect with other teams, share ideas, and get updates!</p>
+            <a href="https://chat.whatsapp.com/ERfEJDVX6zAJT5iLXijkHQ?mode=gi_t" style="display: inline-block; background-color: #25d366; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; transition: background-color 0.3s;">Join WhatsApp Group</a>
+          </div>
+
+          <div style="text-align: center; color: #8b949e; font-size: 12px; border-top: 1px solid #30363d; padding-top: 20px;">
+            <p style="margin: 0;">TECHINNOVA 2026 - Team Registration Confirmed</p>
+            <p style="margin: 5px 0 0 0;">Good luck with your hackathon journey!</p>
+          </div>
+        </div>
+      `;
+
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: leadEmail,
+          teamName,
+          problemId: probId,
+          subject: `Team Registration Confirmed: ${genId}`,
+          htmlContent: emailContent,
+          isTeamRegistration: true
+        })
+      });
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      // Don't block registration if email fails
+    }
+
     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#a371f7', '#ffffff'] });
-    setModal({ show: true, type: 'success', message: cfg?.success_title || "Congratulations! You have Registered Successful.", id: genId });
+    setModal({ show: true, type: 'success', message: cfg?.success_title || "Congratulations! You have Registered Successful.", id: genId, whatsappLink: "https://chat.whatsapp.com/ERfEJDVX6zAJT5iLXijkHQ?mode=gi_t" });
     setLoading(false);
+  };
+
+  const handleResendEmail = async () => {
+    if (!modal.email) return;
+    
+    try {
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0d1117; color: #c9d1d9; padding: 20px;">
+          <div style="border-left: 4px solid #a371f7; padding-left: 20px; margin-bottom: 30px;">
+            <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px;">Registration Confirmation</h1>
+            <p style="color: #8b949e; margin: 0;">TECHINNOVA 2026</p>
+          </div>
+          
+          <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <p style="color: #8b949e; margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Email</p>
+            <p style="color: #ffffff; margin: 0 0 20px 0; font-size: 14px;">${modal.email}</p>
+          </div>
+          
+          <div style="text-align: center; color: #8b949e; font-size: 12px; border-top: 1px solid #30363d; padding-top: 20px;">
+            <p style="margin: 0;">TECHINNOVA 2026</p>
+            <p style="margin: 5px 0 0 0;">If you have any questions, contact the organizing committee.</p>
+          </div>
+        </div>
+      `;
+      
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: modal.email,
+          teamName,
+          problemId: probId,
+          subject: `Team Registration Confirmation - TECHINNOVA 2026`,
+          htmlContent: emailHtml,
+          isTeamRegistration: true
+        })
+      });
+      
+      // Show success modal instead of alert
+      setModal({
+        show: true,
+        type: 'success',
+        message: 'Email sent successfully to ' + modal.email
+      });
+      
+      // Auto-close after 2 seconds
+      setTimeout(() => {
+        setModal({ show: false, type: 'duplicate', message: "" });
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error resending email:', error);
+      setModal({
+        show: true,
+        type: 'error',
+        message: 'Failed to resend email.'
+      });
+    }
   };
 
   return (
@@ -196,7 +407,7 @@ function RegisterForm() {
                 <>
                   <div className="absolute top-0 left-0 w-full h-1 bg-[#a371f7]" />
                   <CheckCircle2 size={48} className="text-[#a371f7] mx-auto mb-4" />
-                  <h2 className="text-3xl font-bold text-white uppercase mb-2 tracking-tighter italic">Congratulations!</h2>
+                  <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white uppercase mb-2 tracking-tighter italic">Congratulations!</h2>
                 </>
               ) : (
                 <>
@@ -211,9 +422,31 @@ function RegisterForm() {
                   <span className="text-[#a371f7] text-lg font-mono font-bold tracking-wider uppercase">{modal.id}</span>
                 </div>
               )}
-              <button onClick={() => modal.type === 'success' ? window.location.href = "/" : setModal({ ...modal, show: false })} className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
-                {modal.type === 'success' ? "Return to Dashboard" : "OK"}
-              </button>
+              {modal.type === 'success' && modal.whatsappLink && (
+                <a href={modal.whatsappLink} target="_blank" rel="noopener noreferrer" className="block w-full py-3 bg-[#25d366] hover:bg-[#1d9e4d] text-white font-bold rounded-md transition-colors uppercase text-sm mb-3 text-center">
+                  Join WhatsApp Group
+                </a>
+              )}
+              {modal.type === 'denied' && modal.email && (
+                <div className="flex gap-3">
+                  <button onClick={handleResendEmail} className="flex-1 py-3 bg-[#a371f7] hover:bg-[#b388f9] text-white font-bold rounded-md transition-colors uppercase text-sm flex items-center justify-center gap-2">
+                    <Mail size={16} /> Resend Email
+                  </button>
+                  <button onClick={() => setModal({ ...modal, show: false })} className="flex-1 py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
+                    Close
+                  </button>
+                </div>
+              )}
+              {modal.type === 'denied' && !modal.email && (
+                <button onClick={() => setModal({ ...modal, show: false })} className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
+                  OK
+                </button>
+              )}
+              {modal.type === 'success' && (
+                <button onClick={() => modal.id ? window.location.href = "/" : setModal({ ...modal, show: false })} className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
+                  {modal.id ? 'Return to Dashboard' : 'Close'}
+                </button>
+              )}
             </motion.div>
           </div>
         )}

@@ -77,11 +77,19 @@ export default function Page() {
                     Register Now <ChevronRight size={18} />
                   </motion.button>
                 </Link>
-                <Link href="#tracks">
-                  <button className="px-8 py-3 bg-[#161b22] border border-[#30363d] hover:border-[#a371f7] hover:text-[#a371f7] text-white font-bold rounded-md transition-all text-sm md:text-base uppercase tracking-tight">
-                    View Tracks
-                  </button>
-                </Link>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    const tracksSection = document.getElementById('tracks');
+                    if (tracksSection) {
+                      tracksSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="px-8 py-3 bg-[#161b22] border border-[#30363d] hover:border-[#a371f7] hover:text-[#a371f7] text-white font-bold rounded-md transition-all text-sm md:text-base uppercase tracking-tight"
+                >
+                  View Tracks
+                </motion.button>
               </div>
 
               <div className="mt-16 py-8 border-y border-[#30363d]/50">
@@ -96,7 +104,7 @@ export default function Page() {
           <div className="max-w-7xl mx-auto px-6">
              <div className="flex items-center gap-4 mb-12">
                 <Cpu className="text-[#8b949e]" />
-                <h2 className="text-2xl font-bold text-white uppercase tracking-tight">Project Tracks</h2>
+                <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white uppercase tracking-tight">Project Tracks</h2>
                 <div className="h-px flex-1 bg-[#30363d]"></div>
              </div>
              <TracksSection tracks={config?.tracks} />
@@ -108,7 +116,7 @@ export default function Page() {
           <div className="max-w-7xl mx-auto px-6">
              <div className="flex items-center gap-4 mb-12">
                 <Clock className="text-[#8b949e]" />
-                <h2 className="text-2xl font-bold text-white uppercase tracking-tight">Event Timeline</h2>
+                <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white uppercase tracking-tight">Event Timeline</h2>
                 <div className="h-px flex-1 bg-[#30363d]"></div>
              </div>
              <Timeline timeline={config?.timeline} />
@@ -122,7 +130,7 @@ export default function Page() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex items-center gap-4 mb-12">
                 <MessageSquare className="text-[#8b949e]" />
-                <h2 className="text-2xl font-bold text-white uppercase tracking-tight">Frequently Asked Questions</h2>
+                <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white uppercase tracking-tight">Frequently Asked Questions</h2>
                 <div className="h-px flex-1 bg-[#30363d]"></div>
              </div>
 

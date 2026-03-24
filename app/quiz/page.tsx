@@ -142,7 +142,7 @@ export default function QuizPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md mx-auto pt-48 px-6 text-center">
             <div className="bg-[#161b22] border border-[#30363d] p-12 rounded-2xl">
               <Lock size={48} className="text-[#8b949e] mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-white uppercase mb-2">Portal Locked</h2>
+              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white uppercase mb-2">Portal Locked</h2>
               <p className="text-[#8b949e] text-xs uppercase tracking-widest leading-relaxed">Evaluation mission is inactive.</p>
             </div>
           </motion.div>
@@ -151,7 +151,7 @@ export default function QuizPage() {
             <div className="bg-[#161b22] border border-[#30363d] p-12 rounded-2xl shadow-2xl relative">
               <div className="absolute top-0 left-0 w-full h-1 bg-red-500" />
               <AlertTriangle size={48} className="text-red-500 mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-white uppercase mb-4 text-center">Attempt Denied</h2>
+              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white uppercase mb-4 text-center">Attempt Denied</h2>
               <p className="text-[#8b949e] text-xs font-mono uppercase tracking-widest mb-8 leading-relaxed">This operative ID has already submitted or breached protocol.</p>
               <button onClick={() => window.location.href = "/"} className="w-full py-4 bg-[#30363d] hover:bg-[#444c56] text-white font-bold uppercase rounded-md text-xs">Return Dashboard</button>
             </div>
@@ -162,7 +162,7 @@ export default function QuizPage() {
               <div className="absolute top-0 left-0 w-full h-1 bg-[#a371f7]" />
               <div className="flex items-center gap-3 justify-center mb-8">
                 <Terminal size={24} className="text-[#a371f7]" />
-                <h2 className="text-2xl font-bold text-white uppercase">Operative <span className="text-[#a371f7]">Login</span></h2>
+                <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white uppercase">Operative <span className="text-[#a371f7]">Login</span></h2>
               </div>
               <div className="space-y-6">
                 <div className="space-y-2">

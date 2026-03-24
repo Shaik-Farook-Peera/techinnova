@@ -10,7 +10,7 @@ export default function TracksSection({ tracks }: { tracks?: any[] }) {
   // This ensures the admin has full control over the fallback state
   if (!tracks || tracks.length === 0) {
     return (
-      <div className="grid grid-cols-4 gap-4 opacity-20">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 opacity-20">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="h-32 bg-[#161b22] border border-[#30363d] rounded-lg animate-pulse" />
         ))}
@@ -44,7 +44,7 @@ export default function TracksSection({ tracks }: { tracks?: any[] }) {
 
   return (
     <motion.div 
-      className="grid grid-cols-4 gap-4"
+      className="grid grid-cols-2 md:grid-cols-4 gap-4"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
