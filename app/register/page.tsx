@@ -239,7 +239,7 @@ function RegisterForm() {
       return setModal({ show: true, type: 'denied', message: "Submission Error" });
     }
 
-    // 6. Send Team Registration Email
+    // 6. Send Team Registration Email to All Members
     try {
       const membersHtml = processedMembers.map((m, i) => `
         <tr style="border-bottom: 1px solid #30363d;">
@@ -255,7 +255,7 @@ function RegisterForm() {
       const emailContent = `
         <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; background-color: #0d1117; color: #c9d1d9; padding: 20px;">
           <div style="border-left: 4px solid #a371f7; padding-left: 20px; margin-bottom: 30px;">
-            <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px;">Team Registration Confirmed</h1>
+            <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px;">🎉 Congratulations!</h1>
             <p style="color: #8b949e; margin: 0;">Your team has been successfully registered for TECHINNOVA 2026</p>
           </div>
 
@@ -309,28 +309,31 @@ function RegisterForm() {
           <div style="text-align: center; background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Join Our Community</h3>
             <p style="color: #8b949e; margin: 0 0 15px 0; font-size: 12px;">Connect with other teams, share ideas, and get updates!</p>
-            <a href="https://chat.whatsapp.com/ERfEJDVX6zAJT5iLXijkHQ?mode=gi_t" style="display: inline-block; background-color: #25d366; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; transition: background-color 0.3s;">Join WhatsApp Group</a>
+            <a href="https://chat.whatsapp.com/ERfEJDVX6zAJT5iLXijkHQ?mode=gi_t" style="display: inline-block; background-color: #25d366; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">Join WhatsApp Group</a>
           </div>
 
           <div style="text-align: center; color: #8b949e; font-size: 12px; border-top: 1px solid #30363d; padding-top: 20px;">
             <p style="margin: 0;">TECHINNOVA 2026 - Team Registration Confirmed</p>
-            <p style="margin: 5px 0 0 0;">Good luck with your hackathon journey!</p>
+            <p style="margin: 5px 0 0 0;">Good luck with your hackathon journey! 🚀</p>
           </div>
         </div>
       `;
 
-      await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: leadEmail,
-          teamName,
-          problemId: probId,
-          subject: `Team Registration Confirmed: ${genId}`,
-          htmlContent: emailContent,
-          isTeamRegistration: true
-        })
-      });
+      // Send email to all team members
+      for (const member of processedMembers) {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: member.email,
+            teamName,
+            problemId: probId,
+            subject: `Team Registration Confirmed: ${genId}`,
+            htmlContent: emailContent,
+            isTeamRegistration: true
+          })
+        });
+      }
     } catch (emailError) {
       console.error('Email sending error:', emailError);
       // Don't block registration if email fails
