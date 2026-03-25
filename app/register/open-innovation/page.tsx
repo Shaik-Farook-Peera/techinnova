@@ -133,6 +133,75 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       const updatedMembers = [...members];
       updatedMembers[0] = { ...updatedMembers[0], email: submission.user_email || trimmedEmail };
       setMembers(updatedMembers);
+
+      // Send approval email with team registration link
+      try {
+        const registrationLink = `${window.location.origin}/register/open-innovation?email=${encodeURIComponent(trimmedEmail)}`;
+        const approvalEmailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0d1117; color: #c9d1d9; padding: 20px;">
+            <div style="border-left: 4px solid #a371f7; padding-left: 20px; margin-bottom: 30px;">
+              <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px;">✅ Your Idea is Approved!</h1>
+              <p style="color: #8b949e; margin: 0;">Your Open Innovation submission has been approved</p>
+            </div>
+
+            <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #8b949e; margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Team Name</p>
+              <p style="color: #ffffff; margin: 0 0 20px 0; font-size: 16px; font-weight: bold;">${submission.team_name}</p>
+
+              <p style="color: #8b949e; margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Problem Title</p>
+              <p style="color: #ffffff; margin: 0 0 20px 0; font-size: 16px;">${submission.problem_title}</p>
+
+              <div style="background-color: #0d1117; border: 2px solid #a371f7; padding: 20px; border-radius: 6px; text-align: center;">
+                <p style="color: #8b949e; margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Your Problem ID</p>
+                <p style="color: #a371f7; margin: 0; font-size: 32px; font-weight: bold; font-family: 'Courier New', monospace;">${submission.problem_id}</p>
+              </div>
+            </div>
+
+            <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Next Step: Register Your Team</h3>
+              <p style="color: #8b949e; margin: 0 0 15px 0; font-size: 13px;">Your Open Innovation idea has been confirmed. Now proceed to register your team with team members and submit your complete team details.</p>
+              <a href="${registrationLink}" style="display: inline-block; background-color: #a371f7; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; transition: background-color 0.3s;">Complete Team Registration →</a>
+            </div>
+
+            <div style="background-color: #0d1117; border-left: 2px solid #a371f7; padding: 15px; margin-bottom: 20px;">
+              <p style="color: #58a6ff; margin: 0; font-size: 12px;">
+                <strong>Important:</strong> Use this email (${trimmedEmail}) and your Problem ID (${submission.problem_id}) to register your team. Keep this email for your records.
+              </p>
+            </div>
+
+            <div style="background-color: #161b22; border: 1px solid #30363d; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <h4 style="color: #a371f7; margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">What To Do Next</h4>
+              <ol style="color: #8b949e; margin: 0; padding-left: 20px; line-height: 1.8; font-size: 12px;">
+                <li style="margin-bottom: 8px;">Click the button above to go to team registration form</li>
+                <li style="margin-bottom: 8px;">Enter your team members' details (up to 4 members)</li>
+                <li style="margin-bottom: 8px;">Fill in all required fields with valid 10-digit mobile numbers</li>
+                <li>Submit your team registration</li>
+              </ol>
+            </div>
+
+            <div style="text-align: center; color: #8b949e; font-size: 12px; border-top: 1px solid #30363d; padding-top: 20px;">
+              <p style="margin: 0;">TECHINNOVA 2026 - Open Innovation Category</p>
+              <p style="margin: 5px 0 0 0;">Questions? Contact the organizing committee at techinnova2k26@gmail.com</p>
+            </div>
+          </div>
+        `;
+
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: trimmedEmail,
+            teamName: submission.team_name,
+            problemId: submission.problem_id,
+            problemTitle: submission.problem_title,
+            subject: `🎉 Your Open Innovation Idea is Approved - ${submission.problem_id}`,
+            htmlContent: approvalEmailHtml,
+            isTeamRegistration: false
+          })
+        });
+      } catch (emailError) {
+        console.error('Error sending approval email:', emailError);
+      }
     }
     setLoadingSubmission(false);
   };
