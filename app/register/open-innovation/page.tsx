@@ -17,6 +17,8 @@ export default function OpenInnovationRegister() {
 
 function OpenInnovationRegisterForm() {
   const [loading, setLoading] = useState(false);
+  const [showApprovalBanner, setShowApprovalBanner] = useState(false);
+  const [approvalEmail, setApprovalEmail] = useState("");
 const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' | 'error'; message: string; id?: string; whatsappLink?: string; email?: string }>({
     show: false, type: 'success', message: "" 
   });
@@ -134,6 +136,10 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       updatedMembers[0] = { ...updatedMembers[0], email: submission.user_email || trimmedEmail };
       setMembers(updatedMembers);
 
+      // Show approval banner on page
+      setApprovalEmail(trimmedEmail);
+      setShowApprovalBanner(true);
+
       // Send approval email with team registration link
       try {
         const registrationLink = `https://techinnova-2k26.vercel.app/register/open-innovation?email=${encodeURIComponent(trimmedEmail)}`;
@@ -157,10 +163,23 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
               </div>
             </div>
 
-            <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
               <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Next Step: Register Your Team</h3>
-              <p style="color: #8b949e; margin: 0 0 15px 0; font-size: 13px;">Your Open Innovation idea has been confirmed. Now proceed to register your team with team members and submit your complete team details.</p>
-              <a href="${registrationLink}" style="display: inline-block; background-color: #a371f7; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; transition: background-color 0.3s;">Complete Team Registration →</a>
+              <p style="color: #8b949e; margin: 0 0 20px 0; font-size: 13px;">Your Open Innovation idea has been confirmed. Now proceed to register your team with team members and submit your complete team details.</p>
+              
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+                <tr>
+                  <td align="center">
+                    <table border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="background-color: #a371f7; padding: 14px 36px; border-radius: 6px; border: 2px solid #a371f7;">
+                          <a href="${registrationLink}" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; display: block; font-family: Arial, sans-serif;">Complete Team Registration →</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
             </div>
 
             <div style="background-color: #0d1117; border-left: 2px solid #a371f7; padding: 15px; margin-bottom: 20px;">
@@ -734,6 +753,46 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
   return (
     <main className="min-h-screen bg-[#0d1117] pt-32 pb-20 px-6 text-[#c9d1d9] font-sans">
       <Navbar />
+
+      {/* ✅ Approval Banner - Shows when user OI is approved */}
+      <AnimatePresence>
+        {showApprovalBanner && (
+          <motion.div 
+            initial={{ y: -100, opacity: 0 }} 
+            animate={{ y: 0, opacity: 1 }} 
+            exit={{ y: -100, opacity: 0 }}
+            className="fixed top-24 left-0 right-0 z-50 mx-auto max-w-2xl px-6"
+          >
+            <div className="bg-gradient-to-r from-[#a371f7] to-[#7c3aed] rounded-lg shadow-2xl overflow-hidden">
+              <div className="bg-[#161b22]/95 px-6 py-4 border border-[#a371f7]/30 flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-sm text-[#8b949e] uppercase tracking-widest mb-1">✅ Open Innovation Approved</p>
+                  <p className="text-white font-semibold">Your idea is approved! Complete your team registration now</p>
+                </div>
+                <div className="flex items-center gap-3 whitespace-nowrap">
+                  <a 
+                    href={`#form-section`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const formSection = document.getElementById('form-section');
+                      if (formSection) formSection.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-6 py-2 bg-[#a371f7] hover:bg-[#b388f9] text-white font-bold rounded-md transition-colors text-sm"
+                  >
+                    Go to Form →
+                  </a>
+                  <button 
+                    onClick={() => setShowApprovalBanner(false)}
+                    className="p-2 hover:bg-[#30363d] rounded-md transition-colors"
+                  >
+                    <span className="text-xl">✕</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <AnimatePresence>
         {modal.show && (
@@ -786,7 +845,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
           <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight uppercase">Open Innovation <span className="text-[#a371f7]">Registration</span></h1>
         </header>
         
-        <form onSubmit={handleRegister} className="space-y-8">
+        <form id="form-section" onSubmit={handleRegister} className="space-y-8">
           {/* Show based on state */}
           {checkEmailMode && !existingTeamData && !emailNotFound ? (
             // Initial Check Email Screen
