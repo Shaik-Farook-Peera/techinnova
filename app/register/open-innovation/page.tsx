@@ -29,6 +29,8 @@ function OpenInnovationRegisterForm() {
   const [oiEmail, setOiEmail] = useState("");
   const [oiProblemId, setOiProblemId] = useState("");
   const [oiProblemTitle, setOiProblemTitle] = useState("");
+  const [loadingSubmission, setLoadingSubmission] = useState(false);
+  const [submissionError, setSubmissionError] = useState("");
   const [cfg, setCfg] = useState<any>(null);
 
   const [members, setMembers] = useState([
@@ -66,6 +68,39 @@ function OpenInnovationRegisterForm() {
     if (members.length <= 1) return;
     const filtered = members.filter((_, i) => i !== idx);
     setMembers(filtered);
+  };
+
+  const loadSubmissionData = async (email: string) => {
+    if (!email.trim()) {
+      setTeamName("");
+      setOiProblemId("");
+      setOiProblemTitle("");
+      setSubmissionError("");
+      return;
+    }
+
+    setLoadingSubmission(true);
+    setSubmissionError("");
+    const trimmedEmail = email.trim().toLowerCase();
+    
+    const { data: submission, error } = await supabase
+      .from("open_innovation_submissions")
+      .select("problem_id, problem_title, team_name")
+      .eq("user_email", trimmedEmail)
+      .single();
+
+    if (error || !submission) {
+      setSubmissionError("No Open Innovation submission found for this email");
+      setTeamName("");
+      setOiProblemId("");
+      setOiProblemTitle("");
+    } else {
+      setTeamName(submission.team_name);
+      setOiProblemId(submission.problem_id);
+      setOiProblemTitle(submission.problem_title);
+      setSubmissionError("");
+    }
+    setLoadingSubmission(false);
   };
 
   const validateOiSubmission = async (): Promise<{ valid: boolean; problemTitle: string }> => {
@@ -414,27 +449,45 @@ function OpenInnovationRegisterForm() {
           <section className="bg-[#161b22] p-8 rounded-xl border border-[#30363d]">
             <h2 className="text-lg font-bold text-[#a371f7] uppercase mb-6 tracking-tight">Your Open Innovation Submission</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-[#8b949e] ml-1">Team Name</label>
-                <input required placeholder="Enter Team Name" value={teamName} onChange={e => setTeamName(e.target.value)} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm uppercase" />
-              </div>
-
+            <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-medium text-[#8b949e] ml-1">Your Email</label>
-                <input type="email" required placeholder="your@email.com" value={oiEmail} onChange={e => setOiEmail(e.target.value)} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm" />
+                <input type="email" required placeholder="your@email.com" value={oiEmail} onChange={e => setOiEmail(e.target.value)} onBlur={() => loadSubmissionData(oiEmail)} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm" />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-[#8b949e] ml-1">Problem ID</label>
-                <input type="text" required placeholder="e.g., OI-001" value={oiProblemId} onChange={e => setOiProblemId(e.target.value.toUpperCase())} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm uppercase font-mono" />
-              </div>
+              {loadingSubmission && (
+                <div className="text-center py-4">
+                  <p className="text-[#8b949e] text-sm">Loading your submission...</p>
+                </div>
+              )}
 
-              {oiProblemTitle && (
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-[#8b949e] ml-1">Your Problem Title</label>
-                  <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold">
-                    {oiProblemTitle}
+              {submissionError && (
+                <div className="bg-[#da3633]/20 border border-[#da3633] rounded-md px-4 py-3">
+                  <p className="text-[#da3633] text-sm">{submissionError}</p>
+                </div>
+              )}
+
+              {oiProblemId && !submissionError && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-[#30363d]">
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-[#8b949e] ml-1">Problem ID</label>
+                    <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold font-mono">
+                      {oiProblemId}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-[#8b949e] ml-1">Team Name</label>
+                    <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold uppercase">
+                      {teamName}
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-xs font-medium text-[#8b949e] ml-1">Problem Title</label>
+                    <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold">
+                      {oiProblemTitle}
+                    </div>
                   </div>
                 </div>
               )}
