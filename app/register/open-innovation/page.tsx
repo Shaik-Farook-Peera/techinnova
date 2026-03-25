@@ -93,6 +93,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
     setSubmissionError("");
     const trimmedEmail = email.trim().toLowerCase();
     
+    // 1. Check if email is in Open Innovation submissions
     const { data: submission, error } = await supabase
       .from("open_innovation_submissions")
       .select("problem_id, problem_title, team_name, user_email")
@@ -100,7 +101,21 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       .single();
 
     if (error || !submission) {
-      setSubmissionError("No Open Innovation submission found for this email");
+      // Not in OI submissions, check if they're registered in another track
+      const { data: existingParticipant } = await supabase
+        .from("participants")
+        .select("email, team_id")
+        .eq("email", trimmedEmail)
+        .single();
+
+      if (existingParticipant) {
+        // User is registered in another track
+        setSubmissionError("You have already registered in another track. You cannot register in multiple tracks. Please contact the organizing committee if you need assistance.");
+      } else {
+        // User is not registered anywhere
+        setSubmissionError("You have not registered in Open Innovation yet. Please register your Open Innovation problem first.");
+      }
+      
       setTeamName("");
       setOiProblemId("");
       setOiProblemTitle("");
@@ -109,6 +124,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       updatedMembers[0] = { ...updatedMembers[0], email: "" };
       setMembers(updatedMembers);
     } else {
+      // Found in OI submissions - load the data
       setTeamName(submission.team_name);
       setOiProblemId(submission.problem_id);
       setOiProblemTitle(submission.problem_title);
@@ -827,18 +843,33 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
                   )}
 
                   {submissionError && (
-                    <div className="bg-orange-500/20 border border-orange-500 rounded-lg px-6 py-8 text-center mt-6">
-                      <ShieldAlert size={48} className="text-orange-500 mx-auto mb-4" />
-                      <h3 className="text-xl font-bold text-white mb-2">Not Registered in Open Innovation</h3>
-                      <p className="text-[#8b949e] mb-6 text-sm">You need to submit your problem to the Open Innovation platform first before registering a team.</p>
-                      <a 
-                        href="https://techinnova-2k26.vercel.app/open-innovation" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-block px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition-colors uppercase text-sm"
-                      >
-                        🚀 Go to Open Innovation
-                      </a>
+                    <div className={`rounded-lg px-6 py-8 text-center mt-6 border ${
+                      submissionError.includes("multiple tracks") 
+                        ? "bg-red-500/20 border-red-500" 
+                        : "bg-orange-500/20 border-orange-500"
+                    }`}>
+                      <ShieldAlert size={48} className={submissionError.includes("multiple tracks") ? "text-red-500" : "text-orange-500"} />
+                      
+                      {submissionError.includes("multiple tracks") ? (
+                        <>
+                          <h3 className="text-xl font-bold text-white mb-2">Already Registered</h3>
+                          <p className="text-[#8b949e] mb-6 text-sm">You have already registered in another track. You cannot register in multiple tracks.</p>
+                          <p className="text-[#8b949e] text-xs">Please contact the organizing committee if you need assistance.</p>
+                        </>
+                      ) : (
+                        <>
+                          <h3 className="text-xl font-bold text-white mb-2">Not Registered in Open Innovation</h3>
+                          <p className="text-[#8b949e] mb-6 text-sm">You need to submit your problem to the Open Innovation platform first before registering a team.</p>
+                          <a 
+                            href="https://techinnova-2k26.vercel.app/open-innovation" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-block px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition-colors uppercase text-sm"
+                          >
+                            🚀 Go to Open Innovation
+                          </a>
+                        </>
+                      )}
                     </div>
                   )}
 
