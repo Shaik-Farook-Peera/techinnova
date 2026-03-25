@@ -356,21 +356,70 @@ function RegisterForm() {
     if (!modal.email) return;
     
     try {
+      // Build members table HTML
+      const membersHtml = members.map((m, i) => `
+        <tr style="border-bottom: 1px solid #30363d;">
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${i + 1}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.name}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.reg_number}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 10px; word-break: break-all;">${m.email}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.branch}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.year}</td>
+        </tr>
+      `).join('');
+
       const emailHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0d1117; color: #c9d1d9; padding: 20px;">
+        <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; background-color: #0d1117; color: #c9d1d9; padding: 20px;">
           <div style="border-left: 4px solid #a371f7; padding-left: 20px; margin-bottom: 30px;">
-            <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px;">Registration Confirmation</h1>
-            <p style="color: #8b949e; margin: 0;">TECHINNOVA 2026</p>
+            <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px;">⚠️ Registration Already Exists</h1>
+            <p style="color: #8b949e; margin: 0;">You are already registered with this email for TECHINNOVA 2026</p>
           </div>
-          
+
           <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <p style="color: #8b949e; margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Email</p>
-            <p style="color: #ffffff; margin: 0 0 20px 0; font-size: 14px;">${modal.email}</p>
+            <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Your Registration Details</h3>
+            
+            <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Team Name</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">${teamName.toUpperCase()}</p>
+
+            <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Track</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${track}</p>
+
+            <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Problem ID</p>
+            <p style="color: #58a6ff; margin: 0 0 15px 0; font-size: 14px; font-weight: bold;">${probId}</p>
+
+            <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Problem Title</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${probName}</p>
           </div>
-          
+
+          <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Team Members</h3>
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; overflow-wrap: break-word;">
+              <thead>
+                <tr style="border-bottom: 2px solid #a371f7;">
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">S.No</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Name</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Reg No</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Email</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Branch</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Year</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${membersHtml}
+              </tbody>
+            </table>
+          </div>
+
+          <div style="background-color: #0d1117; border-left: 2px solid #ffa500; padding: 15px; margin-bottom: 20px;">
+            <p style="color: #ffa500; margin: 0; font-size: 12px;">
+              <strong>Note:</strong> This email is sent because you attempted to register with an email that is already associated with a team. If you have any questions about your registration, please contact the organizing committee.
+            </p>
+          </div>
+
           <div style="text-align: center; color: #8b949e; font-size: 12px; border-top: 1px solid #30363d; padding-top: 20px;">
             <p style="margin: 0;">TECHINNOVA 2026</p>
-            <p style="margin: 5px 0 0 0;">If you have any questions, contact the organizing committee.</p>
+            <p style="margin: 5px 0 0 0;">Best of luck with your hackathon!</p>
           </div>
         </div>
       `;
@@ -382,7 +431,7 @@ function RegisterForm() {
           email: modal.email,
           teamName,
           problemId: probId,
-          subject: `Team Registration Confirmation - TECHINNOVA 2026`,
+          subject: `Your Registration Information - TECHINNOVA 2026`,
           htmlContent: emailHtml,
           isTeamRegistration: true
         })
