@@ -318,7 +318,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
     setCheckEmailMode(false);
     setExistingTeamData(null);
     setEmailNotFound(false);
-    setOiEmail("");
+    // Keep oiEmail preserved so user doesn't have to re-enter it
     setTeamName("");
     setOiProblemId("");
     setOiProblemTitle("");
