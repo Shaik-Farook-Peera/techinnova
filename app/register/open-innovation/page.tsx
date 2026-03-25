@@ -377,12 +377,10 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
   const handleRegister = async (e: any) => {
     e.preventDefault();
     
-    if (!teamName || !oiEmail || !oiProblemId) {
-      return setModal({
-        show: true,
-        type: 'denied',
-        message: "Please fill in all required fields (Email, Problem ID, and Team Name)."
-      });
+    // Only proceed if OI data is loaded (meaning user clicked LOAD and found submission)
+    if (!oiProblemId) {
+      // Don't show modal - the warning card is already visible above
+      return;
     }
 
     setLoading(true);
@@ -902,8 +900,8 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
             </>
           ) : null}
 
-          {/* Team Members Section - Only show if registering new */}
-          {!checkEmailMode && (
+          {/* Team Members Section - Only show if OI data is loaded */}
+          {!checkEmailMode && oiProblemId && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-white uppercase tracking-tight">Team Members</h2>
             <AnimatePresence initial={false}>
@@ -989,7 +987,12 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
 
           {/* Submit Button - Only show for new registration */}
           {!checkEmailMode && (
-            <button type="submit" disabled={loading} className="w-full py-4 bg-[#a371f7] hover:bg-[#b388f9] disabled:opacity-50 text-white font-bold uppercase rounded-md shadow-lg transition-all tracking-widest">
+            <button 
+              type="submit" 
+              disabled={loading || !oiProblemId} 
+              className="w-full py-4 bg-[#a371f7] hover:bg-[#b388f9] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold uppercase rounded-md shadow-lg transition-all tracking-widest"
+              title={!oiProblemId ? "Load your OI submission first by clicking LOAD button" : ""}
+            >
               {loading ? "Registering..." : "Register Team"}
             </button>
           )}
