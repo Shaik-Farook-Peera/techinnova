@@ -34,7 +34,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
   const [cfg, setCfg] = useState<any>(null);
   
   // Check Email functionality states
-  const [checkEmailMode, setCheckEmailMode] = useState(true); // Start in check email mode
+  const [checkEmailMode, setCheckEmailMode] = useState(false); // Start with REGISTRATION FORM (primary purpose)
   const [existingTeamData, setExistingTeamData] = useState<any>(null);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [emailNotFound, setEmailNotFound] = useState(false);
@@ -848,7 +848,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
                     }}
                     className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm mt-4"
                   >
-                    ← Back to Email Check
+                    🔍 Check if Already Registered
                   </button>
                 </div>
               </section>
