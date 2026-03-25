@@ -113,13 +113,14 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
     if (!modal.email) return;
     
     try {
-      // Fetch actual team data from database using the email
-      const { data: participants }: any = await supabase
+      // 1. Find the participant with this email to get team_id
+      const { data: emailParticipant }: any = await supabase
         .from("participants")
-        .select("team_id, name, reg_number, email, branch, year")
-        .eq("email", modal.email);
+        .select("team_id")
+        .eq("email", modal.email)
+        .single();
 
-      if (!participants || participants.length === 0) {
+      if (!emailParticipant) {
         setModal({
           show: true,
           type: 'error',
@@ -128,12 +129,26 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
         return;
       }
 
-      // Get team information
-      const teamId = participants[0]?.team_id;
+      // 2. Fetch ALL team members with this team_id
+      const { data: allTeamMembers }: any = await supabase
+        .from("participants")
+        .select("team_id, name, reg_number, email, branch, year")
+        .eq("team_id", emailParticipant.team_id);
+
+      if (!allTeamMembers || allTeamMembers.length === 0) {
+        setModal({
+          show: true,
+          type: 'error',
+          message: 'Could not find team members.'
+        });
+        return;
+      }
+
+      // 3. Get team information
       const { data: team }: any = await supabase
         .from("teams")
         .select("team_name, track, problem_id, problem_name")
-        .eq("id", teamId)
+        .eq("id", emailParticipant.team_id)
         .single();
 
       if (!team) {
@@ -145,8 +160,8 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
         return;
       }
 
-      // Build members table HTML from database data
-      const membersHtml = participants.map((m: any, i: number) => `
+      // 4. Build members table HTML from ALL team members
+      const membersHtml = allTeamMembers.map((m: any, i: number) => `
         <tr style="border-bottom: 1px solid #30363d;">
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${i + 1}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.name}</td>
