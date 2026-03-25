@@ -201,18 +201,14 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
 
             <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
               <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Next Step: Register Your Team</h3>
-              <p style="color: #8b949e; margin: 0 0 20px 0; font-size: 13px;">Your Open Innovation idea has been confirmed. Now proceed to register your team with team members and submit your complete team details.</p>
+              <p style="color: #8b949e; margin: 0 0 25px 0; font-size: 13px;">Your Open Innovation idea has been confirmed. Now proceed to register your team with team members and submit your complete team details.</p>
               
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+              <table style="margin: 0 auto; border-collapse: collapse;">
                 <tr>
-                  <td align="center">
-                    <table border="0" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td style="background-color: #a371f7; padding: 14px 36px; border-radius: 6px; border: 2px solid #a371f7;">
-                          <a href="${registrationLink}" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; display: block; font-family: Arial, sans-serif;">Complete Team Registration →</a>
-                        </td>
-                      </tr>
-                    </table>
+                  <td style="background-color: #a371f7; color: #ffffff; padding: 16px 40px; border-radius: 6px; border: 2px solid #a371f7; text-align: center;">
+                    <a href="${registrationLink}" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; font-family: Arial, sans-serif; display: inline-block; background-color: #a371f7; padding: 16px 40px; border-radius: 6px;">
+                      Complete Team Registration →
+                    </a>
                   </td>
                 </tr>
               </table>
