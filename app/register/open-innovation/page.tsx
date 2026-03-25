@@ -362,8 +362,11 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
     e.preventDefault();
     
     if (!teamName || !oiEmail || !oiProblemId) {
-      alert("Please fill in all required fields");
-      return;
+      return setModal({
+        show: true,
+        type: 'denied',
+        message: "Please fill in all required fields (Email, Problem ID, and Team Name)."
+      });
     }
 
     setLoading(true);
@@ -659,9 +662,9 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
                   Join WhatsApp Group
                 </a>
               )}
-              {modal.type === 'denied' && modal.email && (
-                <button onClick={handleResendEmail} className="flex-1 py-3 bg-[#a371f7] hover:bg-[#b388f9] text-white font-bold rounded-md transition-colors uppercase text-sm flex items-center justify-center gap-2 mb-3">
-                  📧 Resend Email
+              {modal.type === 'denied' && modal.email && !modal.message.includes("Open Innovation") && (
+                <button onClick={handleResendEmail} className="w-full py-3 bg-[#a371f7] hover:bg-[#b388f9] text-white font-bold rounded-md transition-colors uppercase text-sm flex items-center justify-center gap-2 mb-3">
+                  Resend Email
                 </button>
               )}
               <button onClick={() => modal.type === 'success' ? window.location.href = "/" : setModal({ ...modal, show: false })} className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm">
@@ -853,19 +856,6 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
                       </div>
                     </div>
                   )}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCheckEmailMode(true);
-                      setExistingTeamData(null);
-                      setEmailNotFound(false);
-                      setOiEmail("");
-                    }}
-                    className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm mt-4"
-                  >
-                    🔍 Check if Already Registered
-                  </button>
                 </div>
               </section>
             </>
