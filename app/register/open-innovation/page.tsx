@@ -53,6 +53,9 @@ function OpenInnovationRegisterForm() {
     const next = [...members];
     if (field === 'reg_number') {
         (next[idx] as any)[field] = val.toUpperCase();
+    } else if (field === 'phone') {
+        // Only allow numbers for phone field
+        (next[idx] as any)[field] = val.replace(/\D/g, '');
     } else {
         (next[idx] as any)[field] = val;
     }
@@ -259,12 +262,12 @@ function OpenInnovationRegisterForm() {
     try {
       const membersHtml = processedMembers.map((m, i) => `
         <tr style="border-bottom: 1px solid #30363d;">
-          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${i + 1}</td>
-          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${m.name}</td>
-          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${m.reg_number}</td>
-          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${m.email}</td>
-          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${m.branch}</td>
-          <td style="padding: 12px; color: #c9d1d9; font-size: 13px;">${m.year}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${i + 1}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.name}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.reg_number}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 10px; word-break: break-all;">${m.email}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.branch}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.year}</td>
         </tr>
       `).join('');
 
@@ -299,15 +302,15 @@ function OpenInnovationRegisterForm() {
           <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Team Members</h3>
             
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; overflow-wrap: break-word;">
               <thead>
                 <tr style="border-bottom: 2px solid #a371f7;">
-                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">S.No</th>
-                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">Name</th>
-                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">Reg No</th>
-                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">Email</th>
-                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">Branch</th>
-                  <th style="padding: 12px; text-align: left; color: #a371f7; font-weight: bold;">Year</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">S.No</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Name</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Reg No</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Email</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Branch</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Year</th>
                 </tr>
               </thead>
               <tbody>

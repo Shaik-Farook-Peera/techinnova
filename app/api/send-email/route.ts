@@ -6,10 +6,10 @@ export async function POST(request: NextRequest) {
   try {
     const { email, teamName, problemId, problemTitle, subject, htmlContent, isTeamRegistration } = await request.json();
 
-    // Mailgun SMTP Configuration
+    // Gmail SMTP Configuration (using environment variables)
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.mailgun.org',
-      port: 587,
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587'),
       secure: false,
       auth: {
         user: process.env.SMTP_USER,
