@@ -82,6 +82,10 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       setOiProblemId("");
       setOiProblemTitle("");
       setSubmissionError("");
+      // Clear member 1 email when input is cleared
+      const updatedMembers = [...members];
+      updatedMembers[0] = { ...updatedMembers[0], email: "" };
+      setMembers(updatedMembers);
       return;
     }
 
@@ -91,7 +95,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
     
     const { data: submission, error } = await supabase
       .from("open_innovation_submissions")
-      .select("problem_id, problem_title, team_name")
+      .select("problem_id, problem_title, team_name, user_email")
       .eq("user_email", trimmedEmail)
       .single();
 
@@ -100,11 +104,19 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       setTeamName("");
       setOiProblemId("");
       setOiProblemTitle("");
+      // Clear member 1 email if submission not found
+      const updatedMembers = [...members];
+      updatedMembers[0] = { ...updatedMembers[0], email: "" };
+      setMembers(updatedMembers);
     } else {
       setTeamName(submission.team_name);
       setOiProblemId(submission.problem_id);
       setOiProblemTitle(submission.problem_title);
       setSubmissionError("");
+      // Auto-fill Member 1 (Team Lead) with their OI registration email
+      const updatedMembers = [...members];
+      updatedMembers[0] = { ...updatedMembers[0], email: submission.user_email || trimmedEmail };
+      setMembers(updatedMembers);
     }
     setLoadingSubmission(false);
   };
@@ -370,7 +382,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       return setModal({
         show: true,
         type: 'denied',
-        message: "Invalid email or problem ID. Please verify your submission details."
+        message: "❌ You must first register in Open Innovation before registering a team. Please submit your Open Innovation problem first, then return to register your team."
       });
     }
 
