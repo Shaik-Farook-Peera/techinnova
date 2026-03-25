@@ -383,6 +383,15 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       return;
     }
 
+    // Validate all phone numbers are exactly 10 digits
+    for (let i = 0; i < members.length; i++) {
+      const phone = members[i].phone.trim();
+      if (!phone || phone.length !== 10) {
+        alert(`Please enter a valid 10-digit mobile number for member ${i + 1}`);
+        return;
+      }
+    }
+
     setLoading(true);
 
     // Validate Open Innovation email + problem_id
@@ -532,9 +541,18 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       return setModal({ show: true, type: 'denied', message: `Team creation failed: ${tErr.message}` }); 
     }
 
-    // 5. Save Participants with Generated Passwords
+    // 5. Save Participants with Generated Passwords + Team Info (denormalized)
     const { error: pErr } = await supabase.from("participants").insert(
-      processedMembers.map((m, i) => ({ team_id: team.id, ...m, is_leader: i === 0 }))
+      processedMembers.map((m, i) => ({ 
+        team_id: team.id, 
+        ...m, 
+        is_leader: i === 0,
+        team_name: team.team_name,
+        team_leader_email: team.lead_email,
+        team_leader_name: processedMembers[0].name,
+        problem_id: team.problem_id,
+        track: team.track
+      }))
     );
 
     if (pErr) {
@@ -966,7 +984,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
 
                     <div className="space-y-1 md:col-span-1">
                         <label className="text-[10px] text-[#8b949e] uppercase flex items-center gap-1"><Phone size={10}/> Mobile Number</label>
-                        <input type="tel" required maxLength={10} value={m.phone} onChange={e => handleUpdate(i, 'phone', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" />
+                        <input type="tel" required minLength={10} maxLength={10} value={m.phone} onChange={e => handleUpdate(i, 'phone', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" />
                     </div>
                   </div>
                 </motion.div>
