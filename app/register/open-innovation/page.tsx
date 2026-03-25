@@ -827,8 +827,18 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
                   )}
 
                   {submissionError && (
-                    <div className="bg-[#da3633]/20 border border-[#da3633] rounded-md px-4 py-3">
-                      <p className="text-[#da3633] text-sm">{submissionError}</p>
+                    <div className="bg-orange-500/20 border border-orange-500 rounded-lg px-6 py-8 text-center mt-6">
+                      <ShieldAlert size={48} className="text-orange-500 mx-auto mb-4" />
+                      <h3 className="text-xl font-bold text-white mb-2">Not Registered in Open Innovation</h3>
+                      <p className="text-[#8b949e] mb-6 text-sm">You need to submit your problem to the Open Innovation platform first before registering a team.</p>
+                      <a 
+                        href="https://techinnova-2k26.vercel.app/open-innovation" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-block px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition-colors uppercase text-sm"
+                      >
+                        🚀 Go to Open Innovation
+                      </a>
                     </div>
                   )}
 
