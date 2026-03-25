@@ -136,7 +136,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
 
       // Send approval email with team registration link
       try {
-        const registrationLink = `${window.location.origin}/register/open-innovation?email=${encodeURIComponent(trimmedEmail)}`;
+        const registrationLink = `https://techinnova-2k26.vercel.app/register/open-innovation?email=${encodeURIComponent(trimmedEmail)}`;
         const approvalEmailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0d1117; color: #c9d1d9; padding: 20px;">
             <div style="border-left: 4px solid #a371f7; padding-left: 20px; margin-bottom: 30px;">
