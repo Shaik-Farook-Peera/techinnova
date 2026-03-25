@@ -55,6 +55,42 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
         setYears(regData.years || []);
         setSections(regData.sections || []);
       }
+
+      // Check if email parameter exists in URL (from email button link)
+      const urlParams = new URLSearchParams(window.location.search);
+      const emailParam = urlParams.get('email');
+      
+      if (emailParam) {
+        // Auto-load submission data for this email
+        try {
+          const trimmedEmail = emailParam.trim().toLowerCase();
+          const { data: submission } = await supabase
+            .from("open_innovation_submissions")
+            .select("problem_id, problem_title, team_name, user_email")
+            .eq("user_email", trimmedEmail)
+            .single();
+
+          if (submission) {
+            // Found in OI submissions - auto-load the data
+            setOiEmail(trimmedEmail);
+            setTeamName(submission.team_name);
+            setOiProblemId(submission.problem_id);
+            setOiProblemTitle(submission.problem_title);
+            setSubmissionError("");
+            
+            // Auto-fill Member 1 email
+            const updatedMembers = [...members];
+            updatedMembers[0] = { ...updatedMembers[0], email: submission.user_email || trimmedEmail };
+            setMembers(updatedMembers);
+            
+            // Show approval banner
+            setApprovalEmail(trimmedEmail);
+            setShowApprovalBanner(true);
+          }
+        } catch (error) {
+          console.error('Error loading submission from URL param:', error);
+        }
+      }
     }
     loadData();
   }, []);
