@@ -221,6 +221,11 @@ function RegisterForm() {
       team_name: teamName.toUpperCase(), 
       hackathon_id: genId, 
       lead_email: leadEmail,
+      lead_name: members[0].name,
+      email: members[0].email,
+      phone: members[0].phone,
+      reg_number: members[0].reg_number,
+      members_data: JSON.stringify(processedMembers),
       track, 
       problem_id: probId, 
       problem_name: probName
