@@ -28,6 +28,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# SECURITY: Sensitive database utilities (never commit)
+lib/migrations.ts
+lib/SUPABASE_MIGRATION_SQL.sql
+lib/MIGRATION_INSTRUCTIONS.md
+lib/DATABASE_UTILITIES_README.md
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
