@@ -114,7 +114,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
     
     try {
       // Fetch actual team data from database using the email
-      const { data: participants } = await supabase
+      const { data: participants }: any = await supabase
         .from("participants")
         .select("team_id, name, reg_number, email, branch, year")
         .eq("email", modal.email);
@@ -129,8 +129,8 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       }
 
       // Get team information
-      const teamId = participants[0].team_id;
-      const { data: team } = await supabase
+      const teamId = participants[0]?.team_id;
+      const { data: team }: any = await supabase
         .from("teams")
         .select("team_name, track, problem_id, problem_name")
         .eq("id", teamId)
@@ -146,7 +146,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       }
 
       // Build members table HTML from database data
-      const membersHtml = participants.map((m, i) => `
+      const membersHtml = participants.map((m: any, i: number) => `
         <tr style="border-bottom: 1px solid #30363d;">
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${i + 1}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.name}</td>
@@ -168,16 +168,16 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
             <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Your Registration Details</h3>
             
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Team Name</p>
-            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">${team.team_name.toUpperCase()}</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">${team.team_name?.toUpperCase() || ''}</p>
 
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Track</p>
             <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">Open Innovation</p>
 
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Problem ID</p>
-            <p style="color: #58a6ff; margin: 0 0 15px 0; font-size: 14px; font-weight: bold;">${team.problem_id}</p>
+            <p style="color: #58a6ff; margin: 0 0 15px 0; font-size: 14px; font-weight: bold;">${team.problem_id || ''}</p>
 
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Problem Title</p>
-            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${team.problem_name}</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${team.problem_name || ''}</p>
           </div>
 
           <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -258,7 +258,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       const trimmedEmail = oiEmail.trim().toLowerCase();
 
       // Search for email in participants table
-      const { data: participant, error: pError } = await supabase
+      const { data: participant, error: pError }: any = await supabase
         .from("participants")
         .select("team_id, name, reg_number, email, branch, year")
         .eq("email", trimmedEmail)
@@ -273,10 +273,10 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
       }
 
       // Email found - fetch team details
-      const { data: teamData, error: tError } = await supabase
+      const { data: teamData, error: tError }: any = await supabase
         .from("teams")
         .select("id, team_name, track, problem_id, problem_name")
-        .eq("id", participant.team_id)
+        .eq("id", participant?.team_id)
         .single();
 
       if (teamData) {
