@@ -341,27 +341,21 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
   };
 
   const validateOiSubmission = async (): Promise<{ valid: boolean; problemTitle: string }> => {
-    // Trim and normalize inputs
+    // Just verify that the email has a valid OI submission
     const trimmedEmail = oiEmail.trim().toLowerCase();
-    const trimmedProbId = oiProblemId.trim().toUpperCase();
 
     const { data: oinnovationData, error } = await supabase
       .from("open_innovation_submissions")
       .select("problem_title")
       .eq("user_email", trimmedEmail)
-      .eq("problem_id", trimmedProbId);
+      .single();
 
-    if (error) {
-      console.error("Validation error:", error);
+    if (error || !oinnovationData) {
+      console.error("OI submission validation failed for email:", trimmedEmail);
       return { valid: false, problemTitle: "" };
     }
 
-    if (!oinnovationData || oinnovationData.length === 0) {
-      console.error("No matching submission found for:", { email: trimmedEmail, problemId: trimmedProbId });
-      return { valid: false, problemTitle: "" };
-    }
-
-    return { valid: true, problemTitle: oinnovationData[0].problem_title };
+    return { valid: true, problemTitle: oinnovationData.problem_title };
   };
 
   const handleRegister = async (e: any) => {
@@ -810,7 +804,17 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-[#8b949e] ml-1">Your Email</label>
-                    <input type="email" required placeholder="your@email.com" value={oiEmail} onChange={e => setOiEmail(e.target.value)} onBlur={() => loadSubmissionData(oiEmail)} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm" />
+                    <div className="flex gap-2">
+                      <input type="email" required placeholder="your@email.com" value={oiEmail} onChange={e => setOiEmail(e.target.value)} className="flex-1 bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm" />
+                      <button 
+                        type="button"
+                        onClick={() => loadSubmissionData(oiEmail)}
+                        disabled={loadingSubmission || !oiEmail.trim()}
+                        className="px-4 py-3 bg-[#a371f7] hover:bg-[#b388f9] disabled:bg-[#30363d] disabled:cursor-not-allowed text-white font-bold rounded-md transition-colors uppercase text-xs"
+                      >
+                        {loadingSubmission ? "..." : "Load"}
+                      </button>
+                    </div>
                   </div>
 
                   {loadingSubmission && (
