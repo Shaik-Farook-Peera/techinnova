@@ -32,6 +32,12 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
   const [loadingSubmission, setLoadingSubmission] = useState(false);
   const [submissionError, setSubmissionError] = useState("");
   const [cfg, setCfg] = useState<any>(null);
+  
+  // Check Email functionality states
+  const [checkEmailMode, setCheckEmailMode] = useState(true); // Start in check email mode
+  const [existingTeamData, setExistingTeamData] = useState<any>(null);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [emailNotFound, setEmailNotFound] = useState(false);
 
   const [members, setMembers] = useState([
     { name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" },
@@ -56,8 +62,8 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
     if (field === 'reg_number') {
         (next[idx] as any)[field] = val.toUpperCase();
     } else if (field === 'phone') {
-        // Only allow numbers for phone field
-        (next[idx] as any)[field] = val.replace(/\D/g, '');
+        // Only allow numbers for phone field, max 10 digits
+        (next[idx] as any)[field] = val.replace(/\D/g, '').slice(0, 10);
     } else {
         (next[idx] as any)[field] = val;
     }
@@ -107,8 +113,40 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
     if (!modal.email) return;
     
     try {
-      // Build members table HTML
-      const membersHtml = members.map((m, i) => `
+      // Fetch actual team data from database using the email
+      const { data: participants } = await supabase
+        .from("participants")
+        .select("team_id, name, reg_number, email, branch, year")
+        .eq("email", modal.email);
+
+      if (!participants || participants.length === 0) {
+        setModal({
+          show: true,
+          type: 'error',
+          message: 'Could not find registration data for this email.'
+        });
+        return;
+      }
+
+      // Get team information
+      const teamId = participants[0].team_id;
+      const { data: team } = await supabase
+        .from("teams")
+        .select("team_name, track, problem_id, problem_name")
+        .eq("id", teamId)
+        .single();
+
+      if (!team) {
+        setModal({
+          show: true,
+          type: 'error',
+          message: 'Could not find team information.'
+        });
+        return;
+      }
+
+      // Build members table HTML from database data
+      const membersHtml = participants.map((m, i) => `
         <tr style="border-bottom: 1px solid #30363d;">
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${i + 1}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.name}</td>
@@ -130,16 +168,16 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
             <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Your Registration Details</h3>
             
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Team Name</p>
-            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">${teamName.toUpperCase()}</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">${team.team_name.toUpperCase()}</p>
 
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Track</p>
             <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">Open Innovation</p>
 
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Problem ID</p>
-            <p style="color: #58a6ff; margin: 0 0 15px 0; font-size: 14px; font-weight: bold;">${oiProblemId}</p>
+            <p style="color: #58a6ff; margin: 0 0 15px 0; font-size: 14px; font-weight: bold;">${team.problem_id}</p>
 
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Problem Title</p>
-            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${oiProblemTitle}</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${team.problem_name}</p>
           </div>
 
           <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -180,9 +218,9 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: modal.email,
-          teamName,
-          problemId: oiProblemId,
-          problemTitle: oiProblemTitle,
+          teamName: team.team_name,
+          problemId: team.problem_id,
+          problemTitle: team.problem_name,
           subject: `Your Registration Information - TECHINNOVA 2026 Open Innovation`,
           htmlContent: emailHtml,
           isTeamRegistration: true
@@ -203,6 +241,76 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
         message: 'Failed to resend email.'
       });
     }
+  };
+
+  const checkExistingEmail = async () => {
+    if (!oiEmail.trim()) {
+      setModal({
+        show: true,
+        type: 'error',
+        message: 'Please enter an email address.'
+      });
+      return;
+    }
+
+    setCheckingEmail(true);
+    try {
+      const trimmedEmail = oiEmail.trim().toLowerCase();
+
+      // Search for email in participants table
+      const { data: participant, error: pError } = await supabase
+        .from("participants")
+        .select("team_id, name, reg_number, email, branch, year")
+        .eq("email", trimmedEmail)
+        .single();
+
+      if (!participant) {
+        // Email not found - show registration prompt
+        setCheckEmailMode(true);
+        setExistingTeamData(null);
+        setEmailNotFound(true);
+        return;
+      }
+
+      // Email found - fetch team details
+      const { data: teamData, error: tError } = await supabase
+        .from("teams")
+        .select("id, team_name, track, problem_id, problem_name")
+        .eq("id", participant.team_id)
+        .single();
+
+      if (teamData) {
+        setCheckEmailMode(true);
+        setExistingTeamData({
+          participant,
+          team: teamData,
+          isFound: true
+        });
+        setEmailNotFound(false);
+      }
+    } catch (error) {
+      console.error('Error checking email:', error);
+      // If error (email not found), show registration prompt
+      setCheckEmailMode(true);
+      setExistingTeamData(null);
+      setEmailNotFound(true);
+    } finally {
+      setCheckingEmail(false);
+    }
+  };
+
+  const startNewRegistration = () => {
+    setCheckEmailMode(false);
+    setExistingTeamData(null);
+    setEmailNotFound(false);
+    setOiEmail("");
+    setTeamName("");
+    setOiProblemId("");
+    setOiProblemTitle("");
+    setMembers([
+      { name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" },
+      { name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" }
+    ]);
   };
 
   const validateOiSubmission = async (): Promise<{ valid: boolean; problemTitle: string }> => {
@@ -554,56 +662,186 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
         </header>
         
         <form onSubmit={handleRegister} className="space-y-8">
-          {/* Team & OI Details Section */}
-          <section className="bg-[#161b22] p-8 rounded-xl border border-[#30363d]">
-            <h2 className="text-lg font-bold text-[#a371f7] uppercase mb-6 tracking-tight">Your Open Innovation Submission</h2>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-[#8b949e] ml-1">Your Email</label>
-                <input type="email" required placeholder="your@email.com" value={oiEmail} onChange={e => setOiEmail(e.target.value)} onBlur={() => loadSubmissionData(oiEmail)} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm" />
+          {/* Show based on state */}
+          {checkEmailMode && !existingTeamData && !emailNotFound ? (
+            // Initial Check Email Screen
+            <section className="bg-[#161b22] p-8 rounded-xl border border-[#30363d]">
+              <h2 className="text-lg font-bold text-[#a371f7] uppercase mb-6 tracking-tight">Check Your Registration</h2>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#8b949e] ml-1">Enter Your Email</label>
+                  <input type="email" required placeholder="your@email.com" value={oiEmail} onChange={e => setOiEmail(e.target.value)} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm" />
+                </div>
+
+                <button 
+                  type="button" 
+                  onClick={checkExistingEmail}
+                  disabled={checkingEmail || !oiEmail.trim()}
+                  className="w-full py-3 bg-[#a371f7] hover:bg-[#b388f9] disabled:bg-[#30363d] disabled:cursor-not-allowed text-white font-bold rounded-md transition-colors uppercase text-sm flex items-center justify-center gap-2"
+                >
+                  {checkingEmail ? "Checking..." : "🔍 Check Email"}
+                </button>
+              </div>
+            </section>
+          ) : existingTeamData?.isFound ? (
+            // Existing Registration Found Screen
+            <section className="bg-[#161b22] p-8 rounded-xl border border-[#30363d]">
+              <div className="flex items-center gap-2 mb-6">
+                <CheckCircle2 size={24} className="text-[#a371f7]" />
+                <h2 className="text-lg font-bold text-[#a371f7] uppercase tracking-tight">Registration Found</h2>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="bg-[#0d1117] border border-[#a371f7]/30 rounded-lg p-6">
+                  <p className="text-xs font-medium text-[#8b949e] uppercase mb-2">Team Name</p>
+                  <p className="text-xl font-bold text-[#a371f7]">{existingTeamData.team.team_name}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-[#0d1117] border border-[#30363d] rounded-lg p-4">
+                    <p className="text-xs font-medium text-[#8b949e] uppercase mb-2">Problem ID</p>
+                    <p className="text-lg font-bold text-[#58a6ff] font-mono">{existingTeamData.team.problem_id}</p>
+                  </div>
+
+                  <div className="bg-[#0d1117] border border-[#30363d] rounded-lg p-4">
+                    <p className="text-xs font-medium text-[#8b949e] uppercase mb-2">Track</p>
+                    <p className="text-lg font-bold text-[#c9d1d9]">Open Innovation</p>
+                  </div>
+                </div>
+
+                <div className="bg-[#0d1117] border border-[#30363d] rounded-lg p-4">
+                  <p className="text-xs font-medium text-[#8b949e] uppercase mb-2">Problem Title</p>
+                  <p className="text-base font-semibold text-[#c9d1d9]">{existingTeamData.team.problem_name}</p>
+                </div>
+
+                <div className="bg-[#0d1117] border border-[#30363d] rounded-lg p-4">
+                  <p className="text-xs font-medium text-[#8b949e] uppercase mb-3">Lead Email</p>
+                  <p className="text-sm font-mono text-[#a371f7] break-all">{existingTeamData.participant.email}</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => window.location.href = "/"}
+                  className="w-full py-3 bg-[#238636] hover:bg-[#2ea043] text-white font-bold rounded-md transition-colors uppercase text-sm"
+                >
+                  ✓ Go to Dashboard
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCheckEmailMode(true);
+                    setExistingTeamData(null);
+                    setEmailNotFound(false);
+                    setOiEmail("");
+                  }}
+                  className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm"
+                >
+                  🔄 Check Another Email
+                </button>
+              </div>
+            </section>
+          ) : emailNotFound && checkEmailMode && !existingTeamData ? (
+            // Email Not Found - Show Register Button Screen
+            <section className="bg-[#161b22] p-8 rounded-xl border border-[#30363d]">
+              <div className="text-center mb-8">
+                <ShieldAlert size={48} className="text-orange-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-white uppercase mb-2">Email Not Found</h2>
+                <p className="text-[#8b949e]">This email is not registered yet.</p>
               </div>
 
-              {loadingSubmission && (
-                <div className="text-center py-4">
-                  <p className="text-[#8b949e] text-sm">Loading your submission...</p>
-                </div>
-              )}
+              <div className="space-y-4">
+                <button
+                  type="button"
+                  onClick={startNewRegistration}
+                  className="w-full py-4 bg-[#a371f7] hover:bg-[#b388f9] text-white font-bold rounded-md transition-colors uppercase text-base flex items-center justify-center gap-2"
+                >
+                  🚀 Register in Open Innovation
+                </button>
 
-              {submissionError && (
-                <div className="bg-[#da3633]/20 border border-[#da3633] rounded-md px-4 py-3">
-                  <p className="text-[#da3633] text-sm">{submissionError}</p>
-                </div>
-              )}
-
-              {oiProblemId && !submissionError && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-[#30363d]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCheckEmailMode(true);
+                    setExistingTeamData(null);
+                    setEmailNotFound(false);
+                    setOiEmail("");
+                  }}
+                  className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm"
+                >
+                  ← Check Another Email
+                </button>
+              </div>
+            </section>
+          ) : !checkEmailMode ? (
+            // Registration Form
+            <>
+              <section className="bg-[#161b22] p-8 rounded-xl border border-[#30363d]">
+                <h2 className="text-lg font-bold text-[#a371f7] uppercase mb-6 tracking-tight">Your Open Innovation Submission</h2>
+                
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-[#8b949e] ml-1">Problem ID</label>
-                    <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold font-mono">
-                      {oiProblemId}
-                    </div>
+                    <label className="text-xs font-medium text-[#8b949e] ml-1">Your Email</label>
+                    <input type="email" required placeholder="your@email.com" value={oiEmail} onChange={e => setOiEmail(e.target.value)} onBlur={() => loadSubmissionData(oiEmail)} className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-4 py-3 outline-none focus:border-[#a371f7] transition-colors text-sm" />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-[#8b949e] ml-1">Team Name</label>
-                    <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold uppercase">
-                      {teamName}
+                  {loadingSubmission && (
+                    <div className="text-center py-4">
+                      <p className="text-[#8b949e] text-sm">Loading your submission...</p>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-xs font-medium text-[#8b949e] ml-1">Problem Title</label>
-                    <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold">
-                      {oiProblemTitle}
+                  {submissionError && (
+                    <div className="bg-[#da3633]/20 border border-[#da3633] rounded-md px-4 py-3">
+                      <p className="text-[#da3633] text-sm">{submissionError}</p>
                     </div>
-                  </div>
+                  )}
+
+                  {oiProblemId && !submissionError && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-[#30363d]">
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-[#8b949e] ml-1">Problem ID</label>
+                        <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold font-mono">
+                          {oiProblemId}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-[#8b949e] ml-1">Team Name</label>
+                        <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold uppercase">
+                          {teamName}
+                        </div>
+                      </div>
+
+                      <div className="md:col-span-2 space-y-2">
+                        <label className="text-xs font-medium text-[#8b949e] ml-1">Problem Title</label>
+                        <div className="w-full bg-[#0d1117] border border-[#a371f7]/50 rounded-md px-4 py-3 text-sm text-[#a371f7] font-semibold">
+                          {oiProblemTitle}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCheckEmailMode(true);
+                      setExistingTeamData(null);
+                      setEmailNotFound(false);
+                      setOiEmail("");
+                    }}
+                    className="w-full py-3 bg-[#30363d] hover:bg-[#444c56] text-white font-bold rounded-md transition-colors uppercase text-sm mt-4"
+                  >
+                    ← Back to Email Check
+                  </button>
                 </div>
-              )}
-            </div>
-          </section>
+              </section>
+            </>
+          ) : null}
 
-          {/* Team Members Section */}
+          {/* Team Members Section - Only show if registering new */}
+          {!checkEmailMode && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-white uppercase tracking-tight">Team Members</h2>
             <AnimatePresence initial={false}>
@@ -668,7 +906,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
 
                     <div className="space-y-1 md:col-span-1">
                         <label className="text-[10px] text-[#8b949e] uppercase flex items-center gap-1"><Phone size={10}/> Mobile Number</label>
-                        <input type="tel" required value={m.phone} onChange={e => handleUpdate(i, 'phone', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" />
+                        <input type="tel" required maxLength="10" value={m.phone} onChange={e => handleUpdate(i, 'phone', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" />
                     </div>
                   </div>
                 </motion.div>
@@ -686,10 +924,12 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
             )}
           </div>
 
-          {/* Submit Button */}
-          <button type="submit" disabled={loading} className="w-full py-4 bg-[#a371f7] hover:bg-[#b388f9] disabled:opacity-50 text-white font-bold uppercase rounded-md shadow-lg transition-all tracking-widest">
-            {loading ? "Registering..." : "Register Team"}
-          </button>
+          {/* Submit Button - Only show for new registration */}
+          {!checkEmailMode && (
+            <button type="submit" disabled={loading} className="w-full py-4 bg-[#a371f7] hover:bg-[#b388f9] disabled:opacity-50 text-white font-bold uppercase rounded-md shadow-lg transition-all tracking-widest">
+              {loading ? "Registering..." : "Register Team"}
+            </button>
+          )}
         </form>
       </div>
     </main>

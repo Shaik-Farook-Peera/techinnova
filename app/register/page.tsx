@@ -356,8 +356,40 @@ function RegisterForm() {
     if (!modal.email) return;
     
     try {
-      // Build members table HTML
-      const membersHtml = members.map((m, i) => `
+      // Fetch actual team data from database using the email
+      const { data: participants } = await supabase
+        .from("participants")
+        .select("team_id, name, reg_number, email, branch, year")
+        .eq("email", modal.email);
+
+      if (!participants || participants.length === 0) {
+        setModal({
+          show: true,
+          type: 'error',
+          message: 'Could not find registration data for this email.'
+        });
+        return;
+      }
+
+      // Get team information
+      const teamId = participants[0].team_id;
+      const { data: team } = await supabase
+        .from("teams")
+        .select("team_name, track, problem_id, problem_name")
+        .eq("id", teamId)
+        .single();
+
+      if (!team) {
+        setModal({
+          show: true,
+          type: 'error',
+          message: 'Could not find team information.'
+        });
+        return;
+      }
+
+      // Build members table HTML from database data
+      const membersHtml = participants.map((m, i) => `
         <tr style="border-bottom: 1px solid #30363d;">
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${i + 1}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.name}</td>
@@ -379,16 +411,16 @@ function RegisterForm() {
             <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Your Registration Details</h3>
             
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Team Name</p>
-            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">${teamName.toUpperCase()}</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">${team.team_name.toUpperCase()}</p>
 
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Track</p>
-            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${track}</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${team.track}</p>
 
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Problem ID</p>
-            <p style="color: #58a6ff; margin: 0 0 15px 0; font-size: 14px; font-weight: bold;">${probId}</p>
+            <p style="color: #58a6ff; margin: 0 0 15px 0; font-size: 14px; font-weight: bold;">${team.problem_id}</p>
 
             <p style="color: #8b949e; margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Problem Title</p>
-            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${probName}</p>
+            <p style="color: #ffffff; margin: 0 0 15px 0; font-size: 14px;">${team.problem_name}</p>
           </div>
 
           <div style="background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -429,15 +461,14 @@ function RegisterForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: modal.email,
-          teamName,
-          problemId: probId,
+          teamName: team.team_name,
+          problemId: team.problem_id,
           subject: `Your Registration Information - TECHINNOVA 2026`,
           htmlContent: emailHtml,
           isTeamRegistration: true
         })
       });
       
-      // Show success modal - keep open until user closes
       setModal({
         show: true,
         type: 'success',
@@ -626,7 +657,7 @@ function RegisterForm() {
 
                     <div className="space-y-1 md:col-span-1">
                         <label className="text-[10px] text-[#8b949e] uppercase flex items-center gap-1"><Phone size={10}/> Mobile Number</label>
-                        <input type="tel" required value={m.phone} onChange={e => handleUpdate(i, 'phone', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" />
+                        <input type="tel" required maxLength="10" value={m.phone} onChange={e => handleUpdate(i, 'phone', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" />
                     </div>
                   </div>
                 </motion.div>
