@@ -789,46 +789,6 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
   return (
     <main className="min-h-screen bg-[#0d1117] pt-32 pb-20 px-6 text-[#c9d1d9] font-sans">
       <Navbar />
-
-      {/* ✅ Approval Banner - Shows when user OI is approved */}
-      <AnimatePresence>
-        {showApprovalBanner && (
-          <motion.div 
-            initial={{ y: -100, opacity: 0 }} 
-            animate={{ y: 0, opacity: 1 }} 
-            exit={{ y: -100, opacity: 0 }}
-            className="fixed top-24 left-0 right-0 z-50 mx-auto max-w-2xl px-6"
-          >
-            <div className="bg-gradient-to-r from-[#a371f7] to-[#7c3aed] rounded-lg shadow-2xl overflow-hidden">
-              <div className="bg-[#161b22]/95 px-6 py-4 border border-[#a371f7]/30 flex items-center justify-between gap-4">
-                <div className="flex-1">
-                  <p className="text-sm text-[#8b949e] uppercase tracking-widest mb-1">✅ Open Innovation Approved</p>
-                  <p className="text-white font-semibold">Your idea is approved! Complete your team registration now</p>
-                </div>
-                <div className="flex items-center gap-3 whitespace-nowrap">
-                  <a 
-                    href={`#form-section`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const formSection = document.getElementById('form-section');
-                      if (formSection) formSection.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="px-6 py-2 bg-[#a371f7] hover:bg-[#b388f9] text-white font-bold rounded-md transition-colors text-sm"
-                  >
-                    Go to Form →
-                  </a>
-                  <button 
-                    onClick={() => setShowApprovalBanner(false)}
-                    className="p-2 hover:bg-[#30363d] rounded-md transition-colors"
-                  >
-                    <span className="text-xl">✕</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       
       <AnimatePresence>
         {modal.show && (
