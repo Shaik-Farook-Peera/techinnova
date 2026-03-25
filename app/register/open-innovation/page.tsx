@@ -906,7 +906,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
 
                     <div className="space-y-1 md:col-span-1">
                         <label className="text-[10px] text-[#8b949e] uppercase flex items-center gap-1"><Phone size={10}/> Mobile Number</label>
-                        <input type="tel" required maxLength="10" value={m.phone} onChange={e => handleUpdate(i, 'phone', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" />
+                        <input type="tel" required maxLength={10} value={m.phone} onChange={e => handleUpdate(i, 'phone', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" />
                     </div>
                   </div>
                 </motion.div>
@@ -923,6 +923,7 @@ const [modal, setModal] = useState<{ show: boolean; type: 'success' | 'denied' |
               </button>
             )}
           </div>
+          )}
 
           {/* Submit Button - Only show for new registration */}
           {!checkEmailMode && (
