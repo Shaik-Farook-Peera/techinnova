@@ -106,7 +106,8 @@ export default function AboutAndCoordinators() {
            <h1 className="text-4xl md:text-6xl font-bold text-white uppercase mb-8 tracking-tighter">
             About <span className="text-[#a371f7]">BEC</span>
           </h1>
-          
+          <br>
+          <br>
           <div className="w-full p-6 bg-[#161b22] border border-[#30363d] rounded-xl">
             <p className="text-sm md:text-base text-[#8b949e] leading-relaxed font-medium">
               {config?.aboutbec || "About BEC is currently being updating..."}
