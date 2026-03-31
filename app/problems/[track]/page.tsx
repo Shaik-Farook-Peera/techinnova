@@ -66,7 +66,7 @@ export default function ProblemStatements() {
                 {/* 2. AI TOOLS SECTION */}
                 <div className="px-1">
                   <div className="flex items-center gap-2 mb-4">
-                    <h4 className="text-[#a371f7] text-[10px] font-bold uppercase tracking-widest">AI Tools You Can Use</h4>
+                    <h4 className="text-[#a371f7] text-[10px] font-bold uppercase tracking-widest">Tools You Can Use to Build your Prototype</h4>
                   </div>
                   <p className="text-[#8b949e] text-sm leading-relaxed">
                     {selectedProblem.technologies 
