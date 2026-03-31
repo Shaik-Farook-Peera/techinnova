@@ -103,6 +103,16 @@ export default function AboutAndCoordinators() {
             <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
             <span className="text-[10px] font-bold uppercase tracking-widest">Return to Dashboard</span>
           </Link>
+           <h1 className="text-4xl md:text-6xl font-bold text-white uppercase mb-8 tracking-tighter">
+            About <span className="text-[#a371f7]">BEC</span>
+          </h1>
+          <br>
+          <br>
+          <div className="w-full p-6 bg-[#161b22] border border-[#30363d] rounded-xl">
+            <p className="text-sm md:text-base text-[#8b949e] leading-relaxed font-medium">
+              {config?.aboutbec || "About BEC is currently being updating..."}
+            </p>
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold text-white uppercase mb-8 tracking-tighter">
             About <span className="text-[#a371f7]">IIC</span>
           </h1>
@@ -131,7 +141,7 @@ export default function AboutAndCoordinators() {
           {/* IIC Cheaf Members */}
           <div>
             <div className="flex items-center gap-4 mb-10">
-              <h3 className="text-white text-[10px] font-bold uppercase tracking-[0.4em] whitespace-nowrap">IIC Cheif Members</h3>
+              <h3 className="text-white text-[10px] font-bold uppercase tracking-[0.4em] whitespace-nowrap">Cheif Members</h3>
               <div className="w-full h-px bg-[#30363d]" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
