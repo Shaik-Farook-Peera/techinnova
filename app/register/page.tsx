@@ -39,8 +39,8 @@ function RegisterForm() {
 
   // Initializing with 'phone' field
   const [members, setMembers] = useState([
-    { name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" },
-    { name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" }
+    { name: "", college_name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" },
+    { name: "", college_name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" }
   ]);
 
   useEffect(() => {
@@ -273,6 +273,7 @@ function RegisterForm() {
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.name}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.reg_number}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 10px; word-break: break-all;">${m.email}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.college_name}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.branch}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.year}</td>
         </tr>
@@ -316,6 +317,7 @@ function RegisterForm() {
                   <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Name</th>
                   <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Reg No</th>
                   <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Email</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">College</th>
                   <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Branch</th>
                   <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Year</th>
                 </tr>
@@ -428,6 +430,7 @@ function RegisterForm() {
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.name}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.reg_number}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 10px; word-break: break-all;">${m.email}</td>
+          <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.college_name}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.branch}</td>
           <td style="padding: 8px; color: #c9d1d9; font-size: 11px; word-break: break-word;">${m.year}</td>
         </tr>
@@ -466,6 +469,7 @@ function RegisterForm() {
                   <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Name</th>
                   <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Reg No</th>
                   <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Email</th>
+                  <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">College</th>
                   <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Branch</th>
                   <th style="padding: 8px; text-align: left; color: #a371f7; font-weight: bold; font-size: 11px;">Year</th>
                 </tr>
@@ -655,11 +659,13 @@ function RegisterForm() {
                     </div>
 
                     <div className="space-y-1">
+                        <label className="text-[10px] text-[#8b949e] uppercase">College Name</label>
+                        <input required value={m.college_name} onChange={e => handleUpdate(i, 'college_name', e.target.value.toUpperCase())} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" />
+                    </div>
+
+                    <div className="space-y-1">
                         <label className="text-[10px] text-[#8b949e] uppercase">Branch</label>
-                        <select required value={m.branch} onChange={e => handleUpdate(i, 'branch', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7] appearance-none">
-                            <option value="" className="bg-[#0d1117]">Select</option>
-                            {branches.map(b => <option key={b} value={b} className="bg-[#0d1117]">{b}</option>)}
-                        </select>
+                        <input required value={m.branch} onChange={e => handleUpdate(i, 'branch', e.target.value.toUpperCase())} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" placeholder="e.g., CSE, ECE, ME" />
                     </div>
 
                     <div className="space-y-1">
@@ -669,18 +675,12 @@ function RegisterForm() {
 
                     <div className="space-y-1">
                         <label className="text-[10px] text-[#8b949e] uppercase">Year</label>
-                        <select required value={m.year} onChange={e => handleUpdate(i, 'year', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7] appearance-none">
-                            <option value="" className="bg-[#0d1117]">Select</option>
-                            {years.map(y => <option key={y} value={y} className="bg-[#0d1117]">{y}</option>)}
-                        </select>
+                        <input required value={m.year} onChange={e => handleUpdate(i, 'year', e.target.value.replace(/[^0-9]/g, ''))} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" placeholder="e.g., 1, 2, 3, 4" />
                     </div>
 
                     <div className="space-y-1">
                         <label className="text-[10px] text-[#8b949e] uppercase">Section</label>
-                        <select required value={m.section} onChange={e => handleUpdate(i, 'section', e.target.value)} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7] appearance-none">
-                            <option value="" className="bg-[#0d1117]">Select</option>
-                            {sections.map(s => <option key={s} value={s} className="bg-[#0d1117]">{s}</option>)}
-                        </select>
+                        <input required value={m.section} onChange={e => handleUpdate(i, 'section', e.target.value.toUpperCase())} className="w-full bg-transparent border-b border-[#30363d] py-2 text-sm outline-none focus:border-[#a371f7]" placeholder="e.g., A, B, C" />
                     </div>
 
                     <div className="space-y-1">
@@ -700,7 +700,7 @@ function RegisterForm() {
             {members.length < 4 && (
               <button 
                 type="button" 
-                onClick={() => setMembers([...members, { name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" }])} 
+                onClick={() => setMembers([...members, { name: "", college_name: "", branch: "", section: "", year: "", reg_number: "", email: "", phone: "" }])} 
                 className="w-full py-4 border border-dashed border-[#30363d] rounded-xl text-[#8b949e] hover:text-[#a371f7] hover:border-[#a371f7]/50 transition-all uppercase text-[10px] flex items-center justify-center gap-2 tracking-widest"
               >
                 <UserPlus size={14} /> ADD MEMBERS
