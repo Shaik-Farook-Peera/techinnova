@@ -113,7 +113,7 @@ export default function AboutAndCoordinators() {
               {config?.aboutbec || "About BEC is currently being updating..."}
             </p>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-white uppercase mb-8 tracking-tighter">
+          <h1 className="text-4xl md:text-6xl font-bold text-white uppercase mb-8 tracking-tighter mt-16">
             About <span className="text-[#a371f7]">IIC</span>
           </h1>
           
@@ -128,7 +128,7 @@ export default function AboutAndCoordinators() {
         <section className="space-y-24">
           <header>
 
-             <h1 className="text-4xl md:text-6xl font-bold text-white uppercase mb-8 tracking-tighter">
+             <h1 className="text-4xl md:text-6xl font-bold text-white uppercase mb-8 tracking-tighter mt-16">
             About <span className="text-[#a371f7]">TechInnova</span>
           </h1>
              <div className="w-full p-6 bg-[#161b22] border border-[#30363d] rounded-xl">
