@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import { Terminal, Globe, ArrowLeft, X, Cpu } from "lucide-react";
 
 export default function ProblemStatements() {
   const { track } = useParams();
+  const router = useRouter();
   const [problems, setProblems] = useState<any[]>([]);
   const [selectedProblem, setSelectedProblem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,16 @@ export default function ProblemStatements() {
     }
     fetchTrackProblems();
   }, [track]);
+
+  const handleReturnToTracks = () => {
+    router.push('/');
+    setTimeout(() => {
+      const tracksSection = document.getElementById('tracks');
+      if (tracksSection) {
+        tracksSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 500);
+  };
 
   return (
     <main className="min-h-screen bg-[#0d1117] text-[#c9d1d9] pt-32 pb-20 px-6 font-sans">
@@ -89,10 +100,10 @@ export default function ProblemStatements() {
       </AnimatePresence>
 
       <div className="max-w-7xl mx-auto">
-        <Link href="/#tracks" className="inline-flex items-center gap-2 mb-12 text-[#8b949e] hover:text-[#a371f7] transition-all group">
+        <button onClick={handleReturnToTracks} className="inline-flex items-center gap-2 mb-12 text-[#8b949e] hover:text-[#a371f7] transition-all group">
           <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Return to Tracks</span>
-        </Link>
+        </button>
 
         <header className="mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight uppercase">
