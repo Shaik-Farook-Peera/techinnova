@@ -74,7 +74,31 @@ export default function ProblemStatements() {
                   </p>
                 </div>
 
-                {/* 2. AI TOOLS SECTION */}
+                {/* 2. SOURCE LINKS SECTION */}
+                <div className="bg-[#0d1117] p-5 rounded-xl border border-[#30363d]">
+                  <h4 className="text-[#a371f7] text-[10px] font-bold uppercase tracking-widest mb-3">Source Links</h4>
+                  <div className="text-[#8b949e] text-sm space-y-2">
+                    {selectedProblem.source_links ? (
+                      selectedProblem.source_links.split('\n').map((link: string, idx: number) => 
+                        link.trim() && (
+                          <a 
+                            key={idx}
+                            href={link.trim()} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="block text-[#58a6ff] hover:text-[#a371f7] break-all transition-colors"
+                          >
+                            {link.trim()}
+                          </a>
+                        )
+                      )
+                    ) : (
+                      <p className="text-[#8b949e]">No source links provided</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. AI TOOLS SECTION */}
                 <div className="px-1">
                   <div className="flex items-center gap-2 mb-4">
                     <h4 className="text-[#a371f7] text-[10px] font-bold uppercase tracking-widest">Tools You Can Use to Build your Prototype</h4>
