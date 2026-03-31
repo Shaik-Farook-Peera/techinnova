@@ -337,7 +337,7 @@ function RegisterForm() {
           <div style="text-align: center; background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <h3 style="color: #a371f7; margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Join Our Community</h3>
             <p style="color: #8b949e; margin: 0 0 15px 0; font-size: 12px;">Connect with other teams, share ideas, and get updates!</p>
-            <a href="https://chat.whatsapp.com/ERfEJDVX6zAJT5iLXijkHQ?mode=gi_t" style="display: inline-block; background-color: #25d366; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">Join WhatsApp Group</a>
+            <a href="https://chat.whatsapp.com/BWukQZKcVjx4urArSWKzv1" style="display: inline-block; background-color: #25d366; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">Join WhatsApp Group</a>
           </div>
 
           <div style="text-align: center; color: #8b949e; font-size: 12px; border-top: 1px solid #30363d; padding-top: 20px;">
@@ -368,7 +368,7 @@ function RegisterForm() {
     }
 
     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#a371f7', '#ffffff'] });
-    setModal({ show: true, type: 'success', message: cfg?.success_title || "Congratulations! You have Registered Successful.", id: genId, whatsappLink: "https://chat.whatsapp.com/ERfEJDVX6zAJT5iLXijkHQ?mode=gi_t" });
+    setModal({ show: true, type: 'success', message: cfg?.success_title || "Congratulations! You have Registered Successful.", id: genId, whatsappLink: "https://chat.whatsapp.com/BWukQZKcVjx4urArSWKzv1" });
     setLoading(false);
   };
 
