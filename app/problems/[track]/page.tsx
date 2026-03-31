@@ -89,7 +89,7 @@ export default function ProblemStatements() {
       </AnimatePresence>
 
       <div className="max-w-7xl mx-auto">
-        <Link href="/#tracks" className="inline-flex items-center gap-2 mb-12 text-[#8b949e] hover:text-[#a371f7] transition-all group">
+        <Link href="/problems" className="inline-flex items-center gap-2 mb-12 text-[#8b949e] hover:text-[#a371f7] transition-all group">
           <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Return to Tracks</span>
         </Link>
