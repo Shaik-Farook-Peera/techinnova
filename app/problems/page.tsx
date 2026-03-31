@@ -47,7 +47,7 @@ export default function TracksPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tracks.map((track, index) => (
-              <Link key={track} href={`/problems/${encodeURIComponent(track)}`}>
+              <Link key={track} href="/#tracks">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -63,7 +63,7 @@ export default function TracksPage() {
                   </div>
                   
                   <div className="flex items-center gap-2 mt-6 text-[#a371f7] group-hover:gap-4 transition-all">
-                    <span className="text-xs font-bold uppercase tracking-wider">View Problems</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">Go to Track</span>
                     <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </div>
                 </motion.div>
