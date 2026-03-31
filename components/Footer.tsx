@@ -2,13 +2,29 @@
 import React from 'react';
 import Link from 'next/link';
 import { Mail, Phone, MapPin, Terminal } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function Footer({ config }: { config: any }) {
+  const pathname = usePathname();
+  const router = useRouter();
+
   // Logic to handle scroll-to-section vs page navigation
   const handleNavClick = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      window.scrollTo({ top: element.offsetTop - 80, behavior: "smooth" });
+    if (pathname === "/") {
+      // Already on home page - scroll to section
+      const element = document.getElementById(id);
+      if (element) {
+        window.scrollTo({ top: element.offsetTop - 80, behavior: "smooth" });
+      }
+    } else {
+      // On other pages - navigate to home, then scroll
+      router.push('/');
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          window.scrollTo({ top: element.offsetTop - 80, behavior: "smooth" });
+        }
+      }, 500);
     }
   };
 
